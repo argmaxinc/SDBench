@@ -1,0 +1,25 @@
+defaults:
+  - _self_
+  - datasets:
+    - voxconverse
+    - msdwild
+    - earnings21
+    - ami-ihm
+    - ami-sdm
+    - american-life-podcast
+    - ava-avd
+  - wandb_config: active
+  - metrics:
+    - wer
+    - wder
+    - der
+    - jer
+    - diarization_purity
+    - diarization_purity_coverage_fmeasure
+    - diarization_homogeneity
+    - scer
+    - scmae
+    - sca
+    - detection_error_rate
+    - detection_cost_function
+    - detection_precision_recall_fmeasure

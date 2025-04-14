@@ -1,0 +1,5 @@
+icsi:
+  dataset_id: argmaxinc/icsi-meetings
+  split: test
+  subset: null
+  num_samples: null

@@ -1,0 +1,5 @@
+ali-meetings:
+  dataset_id: argmaxinc/ali-meetings
+  split: test
+  subset: null
+  num_samples: null

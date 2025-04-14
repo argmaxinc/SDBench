@@ -1,0 +1,5 @@
+earnings21:
+  dataset_id: argmaxinc/earnings21
+  split: test
+  subset: null
+  num_samples: null

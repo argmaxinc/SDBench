@@ -1,0 +1,5 @@
+msdwild:
+  dataset_id: argmaxinc/msdwild
+  split: validation # This is the test split
+  subset: null
+  num_samples: null

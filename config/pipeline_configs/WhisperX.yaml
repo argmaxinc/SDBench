@@ -1,0 +1,7 @@
+WhisperXPipeline:
+  config:
+    out_dir: "./whisperx_output"
+    model_name: tiny
+    device: cpu
+    compute_type: float32
+    batch_size: 16

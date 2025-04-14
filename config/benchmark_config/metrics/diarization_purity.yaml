@@ -1,0 +1,5 @@
+diarization_purity:
+  collar: 0.0
+  skip_overlap: false
+  # If set to True, each cluster is weighed by its overall duration.
+  weighted: true

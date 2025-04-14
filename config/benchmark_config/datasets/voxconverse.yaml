@@ -1,0 +1,5 @@
+voxconverse:
+  dataset_id: diarizers-community/voxconverse
+  split: test
+  subset: null
+  num_samples: null

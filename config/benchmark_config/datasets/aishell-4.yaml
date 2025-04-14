@@ -1,0 +1,5 @@
+aishell-4:
+  dataset_id: argmaxinc/aishell-4
+  split: test
+  subset: null
+  num_samples: null
