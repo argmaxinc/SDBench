@@ -17,6 +17,7 @@ multirun
 
 # Wandb
 wandb/
+media/
 
 # HF data cache
 core-model-cache
