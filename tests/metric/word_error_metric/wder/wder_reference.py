@@ -1,3 +1,6 @@
+# For licensing see accompanying LICENSE.md file.
+# Copyright (C) 2024 Argmax, Inc. All Rights Reserved.
+
 # This script is a helper to calculate reference WDER from diarizationlm library
 # See https://github.com/google/speaker-id/blob/master/DiarizationLM/diarizationlm/metrics.py
 # Doing it like this as word-levenhstein dependency of diarizationlm was causing troubles to install

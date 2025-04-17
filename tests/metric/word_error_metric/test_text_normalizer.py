@@ -1,3 +1,6 @@
+# For licensing see accompanying LICENSE.md file.
+# Copyright (C) 2024 Argmax, Inc. All Rights Reserved.
+
 import unittest
 
 from sdbench.metric.word_error_metrics.text_normalizer import EnglishTextNormalizer

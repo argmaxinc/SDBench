@@ -1,3 +1,6 @@
+# For licensing see accompanying LICENSE.md file.
+# Copyright (C) 2024 Argmax, Inc. All Rights Reserved.
+
 from typing import Any
 
 from pydantic import BaseModel, Field

@@ -1,3 +1,6 @@
+# For licensing see accompanying LICENSE.md file.
+# Copyright (C) 2024 Argmax, Inc. All Rights Reserved.
+
 """PyAnnote pipeline implementation with oracle capabilities."""
 
 from .oracle_diarizer import OracleSpeakerDiarization
