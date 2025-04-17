@@ -1,0 +1,5 @@
+ami-sdm-val:
+  dataset_id: diarizers-community/ami
+  split: validation
+  subset: sdm
+  num_samples: null

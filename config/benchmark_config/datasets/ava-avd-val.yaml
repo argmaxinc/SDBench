@@ -1,0 +1,5 @@
+ava-avd-val:
+  dataset_id: argmaxinc/ava-avd
+  split: validation
+  subset: null
+  num_samples: null

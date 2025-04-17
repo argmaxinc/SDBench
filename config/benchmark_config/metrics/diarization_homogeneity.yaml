@@ -1,0 +1,4 @@
+diarization_homogeneity:
+  collar: 0.0
+  skip_overlap: false
+  weighted: true

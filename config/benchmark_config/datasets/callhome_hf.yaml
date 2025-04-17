@@ -1,0 +1,5 @@
+callhome_hf:
+  dataset_id: talkbank/callhome
+  split: data
+  subset: eng
+  num_samples: 1

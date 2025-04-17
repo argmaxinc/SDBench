@@ -1,0 +1,12 @@
+AWSTranscribePipeline:
+  config:
+    results_paath: ./aws_transcribe_results
+    num_speakers: null
+    min_speakers: null
+    # AWS Transcribe allows up to 30 speakers. The minimum is 2.
+    # Ref: https://docs.aws.amazon.com/transcribe/latest/APIReference/API_Settings.html
+    max_speakers: 30
+    bucket_name: diarization-benchmarks
+    region_name: us-east-2
+    num_worker_processes: 8
+    per_worker_chunk_size: 1

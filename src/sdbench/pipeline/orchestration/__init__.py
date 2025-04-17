@@ -1,0 +1,1 @@
+from .whisperkitpro import WhisperKitProPipeline, WhisperKitProPipelineConfig

@@ -1,0 +1,5 @@
+dihard-3-core:
+  dataset_id: argmaxinc/dihard-3
+  split: core
+  subset: null
+  num_samples: null

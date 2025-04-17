@@ -1,0 +1,6 @@
+der:
+  # Duration (in seconds) of collars removed from evaluation around boundaries
+  # of reference segments.
+  collar: 0.0
+  # Set to True to skip evaluating overlapping speech regions.
+  skip_overlap: false

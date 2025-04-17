@@ -1,0 +1,39 @@
+# Unnecessary files
+.DS_Store
+
+## Datasets
+Signals
+
+# Environments
+.env
+**/__pycache__
+
+# Vscode specific
+.vscode
+
+# Hydra specific
+outputs
+multirun
+
+# Wandb
+wandb/
+media/
+
+# HF data cache
+core-model-cache
+argmax-coreml-logs
+
+# Raw datasets
+raw_datasets/
+
+# Experimentation notebooks
+experimentation_notebooks/
+
+# Dataset statistics
+dataset_statistics/
+
+# Wandb sink
+wandb_data/
+
+# Intermediate outputs
+intermediate_outputs/

@@ -1,0 +1,5 @@
+ego4d:
+  dataset_id: argmaxinc/ego4d
+  split: validation
+  subset: null
+  num_samples: null

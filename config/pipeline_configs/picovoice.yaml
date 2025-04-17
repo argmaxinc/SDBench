@@ -1,0 +1,3 @@
+PicovoicePipeline:
+  config:
+    out_dir: ./picovoice_logs

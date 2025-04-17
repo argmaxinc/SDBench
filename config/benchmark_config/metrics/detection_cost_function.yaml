@@ -1,0 +1,5 @@
+detection_cost_function:
+  collar: 0.0
+  skip_overlap: false
+  fa_weight: 0.25
+  miss_weight: 0.75

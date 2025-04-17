@@ -1,0 +1,5 @@
+ami-ihm:
+  dataset_id: diarizers-community/ami
+  split: test
+  subset: ihm
+  num_samples: null
