@@ -7,6 +7,10 @@
 [![Paper](https://img.shields.io/badge/Paper-📄-blue)](http://argmaxinc.com/sdbench-paper)
 [![Discord](https://img.shields.io/discord/1171912382512115722?style=flat&logo=discord&logoColor=969da4&label=Discord&labelColor=353a41&color=32d058&link=https%3A%2F%2Fdiscord.gg%2FG5F5GZGecC)](https://discord.gg/G5F5GZGecC)
 
+> [!NOTE]
+> The SDBench code is licensed under the MIT License. However, please note that:
+> - SpeakerKit CLI and other integrated systems have their own licenses that apply
+> - The datasets used in this benchmark have their own licenses and usage restrictions (see [Diarization Datasets](#diarization-datasets) section for details)
 
 `SDBench` is an open-source benchmarking tool for speaker diarization systems. The primary objective is to promote standardized, reproducible, and continuous evaluation of open-source and proprietary speaker diarization systems across on-device and server-side implementations.
 
