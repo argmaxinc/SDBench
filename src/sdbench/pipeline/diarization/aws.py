@@ -21,6 +21,7 @@ from ...pipeline_prediction import DiarizationAnnotation
 from ..base import Pipeline, PipelineType, register_pipeline
 from .common import DiarizationOutput, DiarizationPipelineConfig
 
+
 __all__ = ["AWSTranscribePipeline", "AWSTranscribeConfig"]
 
 
@@ -99,9 +100,7 @@ class AWSTranscribeAPI:
         """
         Create new clients when needed - each process in the pool will need its own client.
         """
-        transcribe_client = boto3.client(
-            "transcribe", region_name=self.config.region_name
-        )
+        transcribe_client = boto3.client("transcribe", region_name=self.config.region_name)
         s3_client = boto3.client("s3", region_name=self.config.region_name)
         return transcribe_client, s3_client
 

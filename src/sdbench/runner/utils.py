@@ -10,6 +10,7 @@ from pyannote.metrics.base import BaseMetric
 
 from .data_models import GlobalResult
 
+
 logger = get_logger(__name__)
 
 
@@ -23,9 +24,7 @@ def get_global_results(
         # This is how you get the global result of a metric in pyannote
         global_result = abs(metric)
         # Get the global result of the metric components
-        detailed_result = {
-            component: metric[component] for component in metric.components_
-        }
+        detailed_result = {component: metric[component] for component in metric.components_}
         # This is how you get the confidence interval of a metric in pyannote
         # confidence interval is computed with `scipy.stats.bayes_mvs` taking only the interval for the mean
         avg_result, (lower_bound, upper_bound) = metric.confidence_interval(alpha=0.9)

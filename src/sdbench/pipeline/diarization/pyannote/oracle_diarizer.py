@@ -1,7 +1,6 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-from pathlib import Path
 from typing import Optional, Text, Union
 
 from pyannote.audio import Model

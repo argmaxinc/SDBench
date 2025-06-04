@@ -36,12 +36,8 @@ class BaseSpeakerCountMetric(BaseMetric):
     def _supports_paired_evaluation(self) -> bool:
         return True
 
-    def _get_speaker_counts(
-        self, reference: Annotation, hypothesis: Annotation
-    ) -> SpeakerCounts:
-        return SpeakerCounts(
-            reference=len(reference.labels()), hypothesis=len(hypothesis.labels())
-        )
+    def _get_speaker_counts(self, reference: Annotation, hypothesis: Annotation) -> SpeakerCounts:
+        return SpeakerCounts(reference=len(reference.labels()), hypothesis=len(hypothesis.labels()))
 
 
 @MetricRegistry.register_metric(PipelineType.DIARIZATION, MetricOptions.SCER)
@@ -67,9 +63,7 @@ class SpeakerCountingErrorRate(BaseSpeakerCountMetric):
     def metric_components(cls) -> MetricComponents:
         return ["reference_speaker_count", "hypothesis_speaker_count"]
 
-    def compute_components(
-        self, reference: Annotation, hypothesis: Annotation, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Annotation, hypothesis: Annotation, **kwargs) -> Details:
         counts = self._get_speaker_counts(reference, hypothesis)
         return {
             "reference_speaker_count": counts.reference,
@@ -80,9 +74,7 @@ class SpeakerCountingErrorRate(BaseSpeakerCountMetric):
         reference_count = detail["reference_speaker_count"]
         if reference_count == 0:
             return 0.0
-        return (
-            abs(detail["hypothesis_speaker_count"] - reference_count) / reference_count
-        )
+        return abs(detail["hypothesis_speaker_count"] - reference_count) / reference_count
 
 
 @MetricRegistry.register_metric(PipelineType.DIARIZATION, MetricOptions.SCMAE)
@@ -108,9 +100,7 @@ class SpeakerCountMeanAbsoluteError(BaseSpeakerCountMetric):
     def metric_components(cls) -> MetricComponents:
         return ["absolute_error", "total_samples"]
 
-    def compute_components(
-        self, reference: Annotation, hypothesis: Annotation, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Annotation, hypothesis: Annotation, **kwargs) -> Details:
         counts = self._get_speaker_counts(reference, hypothesis)
         return {"absolute_error": counts.absolute_error, "total_samples": 1}
 
@@ -142,9 +132,7 @@ class SpeakerCountAccuracy(BaseSpeakerCountMetric):
     def metric_components(cls) -> MetricComponents:
         return ["correct_predictions", "total_samples"]
 
-    def compute_components(
-        self, reference: Annotation, hypothesis: Annotation, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Annotation, hypothesis: Annotation, **kwargs) -> Details:
         counts = self._get_speaker_counts(reference, hypothesis)
         return {
             "correct_predictions": int(counts.is_correct),

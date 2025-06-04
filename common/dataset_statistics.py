@@ -16,6 +16,7 @@ from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
 from sdbench.dataset import DiarizationDataset, DiarizationSample
 
+
 logger = get_logger(__name__)
 
 
@@ -28,9 +29,7 @@ def get_total_speech_duration(sample: DiarizationSample) -> float:
 
 
 class LanguageDetector:
-    def __init__(
-        self, model_name: str = "openai/whisper-large-v3", max_duration: float = 30.0
-    ):
+    def __init__(self, model_name: str = "openai/whisper-large-v3", max_duration: float = 30.0):
         self.model_name = model_name
         self.max_duration = max_duration
         self.device = get_fastest_device()
@@ -42,9 +41,7 @@ class LanguageDetector:
         sample_rate = sample.sample_rate
         waveform = sample.waveform
         waveform = waveform[: int(self.max_duration * sample_rate)]
-        inputs = self.processor(
-            audio=waveform, sampling_rate=sample_rate, return_tensors="pt"
-        ).to(self.device)
+        inputs = self.processor(audio=waveform, sampling_rate=sample_rate, return_tensors="pt").to(self.device)
         language_token = self.model.detect_language(inputs["input_features"])
         return self.processor.decode(language_token).strip("<|").strip("|>")
 
@@ -82,9 +79,7 @@ def compute_speaker_congestion(
     )
 
 
-def get_sample_info(
-    sample: DiarizationSample, language_detector: LanguageDetector | None = None
-) -> dict[str, float]:
+def get_sample_info(sample: DiarizationSample, language_detector: LanguageDetector | None = None) -> dict[str, float]:
     audio_duration = sample.get_audio_duration()
     overlap_duration = get_overlap_duration(sample)
     total_speech_duration_without_overlap = get_total_speech_duration(sample)
@@ -93,25 +88,15 @@ def get_sample_info(
         num_windows,
         median_num_speakers_per_window,
     ) = compute_speaker_congestion(sample=sample)
-    speaker_congestion_stride_2, _, _ = compute_speaker_congestion(
-        sample=sample, stride=2
-    )
-    speaker_congestion_stride_4, _, _ = compute_speaker_congestion(
-        sample=sample, stride=4
-    )
-    speaker_congestion_stride_5, _, _ = compute_speaker_congestion(
-        sample=sample, stride=5
-    )
-    speaker_congestion_stride_10, _, _ = compute_speaker_congestion(
-        sample=sample, stride=10
-    )
+    speaker_congestion_stride_2, _, _ = compute_speaker_congestion(sample=sample, stride=2)
+    speaker_congestion_stride_4, _, _ = compute_speaker_congestion(sample=sample, stride=4)
+    speaker_congestion_stride_5, _, _ = compute_speaker_congestion(sample=sample, stride=5)
+    speaker_congestion_stride_10, _, _ = compute_speaker_congestion(sample=sample, stride=10)
     info = {
         "audio_name": sample.audio_name,
         "overlap_duration": overlap_duration,
         "total_speech_duration": total_speech_duration_without_overlap,
-        "silence_duration": max(
-            0, audio_duration - total_speech_duration_without_overlap
-        ),
+        "silence_duration": max(0, audio_duration - total_speech_duration_without_overlap),
         "audio_duration": audio_duration,
         "num_speakers": len(sample.annotation.labels()),
         "speaker_congestion": speaker_congestion,
@@ -127,16 +112,12 @@ def get_sample_info(
     return info
 
 
-def get_dataset_info(
-    dataset: DiarizationDataset, language_detector: LanguageDetector | None = None
-) -> pd.DataFrame:
+def get_dataset_info(dataset: DiarizationDataset, language_detector: LanguageDetector | None = None) -> pd.DataFrame:
     return (
         pd.DataFrame(
             [
                 get_sample_info(sample, language_detector)
-                for sample in tqdm(
-                    dataset, desc="Getting dataset info", total=len(dataset)
-                )
+                for sample in tqdm(dataset, desc="Getting dataset info", total=len(dataset))
             ]
         )
         .reset_index()
@@ -150,12 +131,8 @@ def aggregate_dataset_info(dataset_info: pd.DataFrame) -> pd.DataFrame:
         .rename(columns={"index": "sample_id"})
         .pipe(lambda df: df.loc[:, ~df.columns.str.contains("_stride")])
         .assign(
-            overlap_duration=lambda df: 100
-            * df["overlap_duration"]
-            / df["audio_duration"].sum(),
-            silence_duration=lambda df: 100
-            * df["silence_duration"]
-            / df["audio_duration"].sum(),
+            overlap_duration=lambda df: 100 * df["overlap_duration"] / df["audio_duration"].sum(),
+            silence_duration=lambda df: 100 * df["silence_duration"] / df["audio_duration"].sum(),
             speaker_congestion=lambda df: 100
             * (df["speaker_congestion"] * df["speaker_congestion_windows"])
             / df["speaker_congestion_windows"].sum(),
@@ -245,31 +222,19 @@ def main(
             dataset_info = get_dataset_info(dataset, language_detector)
             logger.info(f"Dataset info collected with {len(dataset_info)} samples")
             dataset_agg_info = aggregate_dataset_info(dataset_info)
-            logger.info(
-                f"Dataset agg info collected with {len(dataset_agg_info)} samples"
-            )
+            logger.info(f"Dataset agg info collected with {len(dataset_agg_info)} samples")
 
             prefix = f"{dataset_id.replace('/', '__')}_{subset}_{split}"
-            logger.info(
-                f"Saving dataset agg info to {agg_data_dir / f'{prefix}_agg_info.csv'}"
-            )
-            dataset_agg_info.to_csv(
-                agg_data_dir / f"{prefix}_agg_info.csv", index=False
-            )
-            logger.info(
-                f"Saving dataset per sample info to {per_sample_data_dir / f'{prefix}_per_sample_info.csv'}"
-            )
-            dataset_info.to_csv(
-                per_sample_data_dir / f"{prefix}_per_sample_info.csv", index=False
-            )
+            logger.info(f"Saving dataset agg info to {agg_data_dir / f'{prefix}_agg_info.csv'}")
+            dataset_agg_info.to_csv(agg_data_dir / f"{prefix}_agg_info.csv", index=False)
+            logger.info(f"Saving dataset per sample info to {per_sample_data_dir / f'{prefix}_per_sample_info.csv'}")
+            dataset_info.to_csv(per_sample_data_dir / f"{prefix}_per_sample_info.csv", index=False)
         except Exception as e:
             logger.error(f"Error processing split {split}: {e}")
             continue
 
     logger.info(f"Pushing dataset statistics to {repo_id}")
-    upload_folder(
-        repo_id=repo_id, folder_path=str(output_dir), path_in_repo=str(output_dir)
-    )
+    upload_folder(repo_id=repo_id, folder_path=str(output_dir), path_in_repo=str(output_dir))
 
 
 if __name__ == "__main__":
@@ -277,12 +242,8 @@ if __name__ == "__main__":
 
     parser.add_argument("--dataset-id", type=str, required=True)
     parser.add_argument("--subset", type=str, required=False, default=None)
-    parser.add_argument(
-        "--output-dir", type=str, required=False, default="dataset_statistics"
-    )
-    parser.add_argument(
-        "--repo-id", type=str, required=False, default="argmaxinc/interspeech-artifacts"
-    )
+    parser.add_argument("--output-dir", type=str, required=False, default="dataset_statistics")
+    parser.add_argument("--repo-id", type=str, required=False, default="argmaxinc/interspeech-artifacts")
 
     args = parser.parse_args()
     main(

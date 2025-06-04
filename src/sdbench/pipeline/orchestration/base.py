@@ -19,6 +19,7 @@ from ..base import (
 from ..diarization import DiarizationOutput
 from ..transcription import TranscriptionOutput
 
+
 logger = get_logger(__name__)
 
 
@@ -85,7 +86,4 @@ class PostInferenceMergePipeline(Pipeline):
 
     # This is where the merging strategies should be implemented
     @abstractmethod
-    def parse_output(
-        self, output: tuple[DiarizationOutput, TranscriptionOutput]
-    ) -> OrchestrationOutput:
-        ...
+    def parse_output(self, output: tuple[DiarizationOutput, TranscriptionOutput]) -> OrchestrationOutput: ...

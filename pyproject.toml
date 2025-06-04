@@ -1,50 +1,95 @@
-[tool.poetry]
+[project]
 name = "sdbench"
 version = "0.1.0"
 description = "Benchmark suite for speaker diarization"
-authors = ["Argmax Inc. <info@takeargmax.com>"]
+authors = [{ name = "Argmax Inc.", email = "info@takeargmax.com" }]
+requires-python = ">=3.11,<3.13"
 readme = "README.md"
-packages = [{include = "sdbench", from = "src"}]
+dependencies = [
+    "black>=24.10.0,<25",
+    "pydantic>=2.9.2,<3",
+    "numba~=0.60.0",
+    "llvmlite==0.43.0",
+    "pyannote-audio>=3.3.2,<4",
+    "datasets>=3.1.0,<4",
+    "argmaxtools>=0.1.14,<0.2",
+    "hydra-core>=1.3.2,<2",
+    "wandb>=0.19.0,<0.20",
+    "umap-learn>=0.5.7,<0.6",
+    "hdbscan>=0.8.40,<0.9",
+    "plotly>=5.24.1,<6",
+    "kaleido==0.2.1",
+    "librosa>=0.10.2.post1,<0.11",
+    "boto3>=1.36.20,<2",
+    "pvfalcon>=1.0.4,<2",
+    "jiwer>=3.1.0,<4",
+    "whisperx>=3.3.1,<4",
+    "torch==2.5.0",
+    "scikit-learn==1.5.1",
+    "speechbrain==1.0.2",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-black = "^24.10.0"
-pydantic = "^2.9.2"
-numba = "~0.60.0"
-llvmlite = "0.43.0"
-pyannote-audio = "^3.3.2"
-datasets = "^3.1.0"
-argmaxtools = "^0.1.14"
-hydra-core = "^1.3.2"
-wandb = "^0.19.0"
-umap-learn = "^0.5.7"
-hdbscan = "^0.8.40"
-plotly = "^5.24.1"
-kaleido = "0.2.1"
-librosa = "^0.10.2.post1"
-boto3 = "^1.36.20"
-pvfalcon = "^1.0.4"
-jiwer = "^3.1.0"
-whisperx = "^3.3.1"
-torch = "2.5.0"
-scikit-learn = "1.5.1"
-speechbrain = "1.0.2"
-
-[tool.poetry.group.dataset.dependencies]
-gdown = "^5.2.0"
-lxml = "^5.3.0"
-textgrid = "^1.6.1"
-kaggle = "^1.6.17"
-pydub = "^0.25.1"
-transformers = "^4.48.2"
-ego4d = "^1.7.3"
-
-[tool.poetry.scripts]
+[project.scripts]
 sdbench = "cli.cli:cli"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.5"
+[dependency-groups]
+dataset = [
+    "gdown>=5.2.0,<6",
+    "lxml>=5.3.0,<6",
+    "textgrid>=1.6.1,<2",
+    "kaggle>=1.6.17,<2",
+    "pydub>=0.25.1,<0.26",
+    "transformers>=4.48.2,<5",
+    "ego4d>=1.7.3,<2",
+]
+dev = ["pytest>=8.3.5,<9"]
+
+[tool.uv]
+default-groups = [
+    "dataset",
+    "dev",
+]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/sdbench"]
+
+[tool.hatch.build.targets.wheel]
+include = ["src/sdbench"]
+
+[tool.hatch.build.targets.wheel.sources]
+"src/sdbench" = "sdbench"
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 119
+
+[tool.ruff.lint]
+# Never enforce `E501` (line length violations).
+ignore = ["C901", "E501", "E741", "F402", "F823" ]
+# RUF013: Checks for the use of implicit Optional
+#  in type annotations when the default parameter value is None.
+select = ["C", "E", "F", "I", "W", "RUF013"]
+
+# Ignore import violations in all `__init__.py` files.
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["E402", "F401", "F403", "F811"]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+known-first-party = ["sdbench"]
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"

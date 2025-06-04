@@ -26,9 +26,7 @@ class BenchmarkConfig(BaseModel):
     metrics: dict[MetricOptions, dict[str, Any]] = Field(
         ..., description="The metrics that will be used for each task"
     )
-    datasets: dict[str, DiarizationDatasetConfig] = Field(
-        ..., description="Datasets to evaluate"
-    )
+    datasets: dict[str, DiarizationDatasetConfig] = Field(..., description="Datasets to evaluate")
 
     class Config:
         arbitrary_types_allowed = True
@@ -36,7 +34,5 @@ class BenchmarkConfig(BaseModel):
     def get_wandb_config_to_log(self) -> dict[str, Any]:
         wandb_config: dict[str, Any] = self.model_dump()
         # Convert `metrics` that use enums to their respective values
-        wandb_config["metrics"] = {
-            metric.value: kwargs for metric, kwargs in wandb_config["metrics"].items()
-        }
+        wandb_config["metrics"] = {metric.value: kwargs for metric, kwargs in wandb_config["metrics"].items()}
         return wandb_config

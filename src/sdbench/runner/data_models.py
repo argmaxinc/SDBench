@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from ..pipeline.base import PredictionProtocol
 from ..pipeline_prediction import DiarizationAnnotation, Transcript
 
+
 Prediction = TypeVar("Prediction", bound=PredictionProtocol)
 
 
@@ -87,12 +88,8 @@ class GlobalResult(BaseModel):
         description="The detailed results of the metric i.e. breakdown by its components allowing for more granular analysis",
     )
     avg_result: float = Field(..., description="The average result of the metric")
-    upper_bound: float = Field(
-        ..., description="The upper bound of the confidence interval"
-    )
-    lower_bound: float = Field(
-        ..., description="The lower bound of the confidence interval"
-    )
+    upper_bound: float = Field(..., description="The upper bound of the confidence interval")
+    lower_bound: float = Field(..., description="The lower bound of the confidence interval")
 
 
 class BenchmarkResult(BaseModel):
@@ -100,6 +97,4 @@ class BenchmarkResult(BaseModel):
         ..., description="The results of the samples"
     )
     task_results: list[TaskResult] = Field(..., description="The results of the tasks")
-    global_results: list[GlobalResult] = Field(
-        ..., description="The results of the global metrics"
-    )
+    global_results: list[GlobalResult] = Field(..., description="The results of the global metrics")

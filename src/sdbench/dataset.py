@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from .pipeline_prediction import DiarizationAnnotation, Transcript
 
+
 logger = get_logger(__name__)
 
 
@@ -39,9 +40,7 @@ class DiarizationDatasetConfig(BaseModel):
     - `word_timestamps`: The timestamps of the words in the transcript as a list of tuples `[(start, end), ...]`.
     """
 
-    dataset_id: str = Field(
-        ..., description="HuggingFace dataset ID. Ex: 'talkbank/callhome'"
-    )
+    dataset_id: str = Field(..., description="HuggingFace dataset ID. Ex: 'talkbank/callhome'")
     # Not every dataset has a subset or split.
     subset: str | None = Field(
         None,
@@ -63,17 +62,11 @@ class DiarizationDatasetConfig(BaseModel):
 
 class DiarizationSample(BaseModel):
     audio_name: str = Field(..., description="The name of the audio file")
-    waveform: np.ndarray = Field(
-        ..., description="The audio waveform as a numpy array with shape (n_samples,)"
-    )
+    waveform: np.ndarray = Field(..., description="The audio waveform as a numpy array with shape (n_samples,)")
     sample_rate: int = Field(..., description="The sample rate of the audio waveform")
-    annotation: DiarizationAnnotation = Field(
-        ..., description="The annotation of the audio waveform"
-    )
+    annotation: DiarizationAnnotation = Field(..., description="The annotation of the audio waveform")
     uem: Timeline | None = Field(None, description="The UEM of the audio waveform")
-    transcript: Transcript | None = Field(
-        None, description="The transcript of the audio waveform"
-    )
+    transcript: Transcript | None = Field(None, description="The transcript of the audio waveform")
 
     def get_audio_duration(self) -> float:
         return len(self.waveform) / self.sample_rate
@@ -128,19 +121,13 @@ class DiarizationDataset:
 
         transcript_words: list[str] = sample["transcript"]
 
-        word_speakers: list[str] | None = (
-            sample["word_speakers"] if "word_speakers" in sample else None
-        )
+        word_speakers: list[str] | None = sample["word_speakers"] if "word_speakers" in sample else None
 
         word_timestamps: list[tuple[float, float]] | None = (
             sample["word_timestamps"] if "word_timestamps" in sample else None
         )
-        word_timestamps_start = (
-            None if word_timestamps is None else [s for s, _ in word_timestamps]
-        )
-        word_timestamps_end = (
-            None if word_timestamps is None else [e for _, e in word_timestamps]
-        )
+        word_timestamps_start = None if word_timestamps is None else [s for s, _ in word_timestamps]
+        word_timestamps_end = None if word_timestamps is None else [e for _, e in word_timestamps]
 
         if word_speakers is not None and len(word_speakers) != len(transcript_words):
             raise ValueError(

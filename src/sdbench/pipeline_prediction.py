@@ -20,9 +20,7 @@ class DiarizationAnnotation(Annotation):
         return path
 
     @classmethod
-    def from_pyannote_annotation(
-        cls, pyannote_annotation: Annotation
-    ) -> "DiarizationAnnotation":
+    def from_pyannote_annotation(cls, pyannote_annotation: Annotation) -> "DiarizationAnnotation":
         diarization_annotation = cls(pyannote_annotation.uri)
         for segment, _, speaker in pyannote_annotation.itertracks(yield_label=True):
             diarization_annotation[segment] = speaker
@@ -32,30 +30,22 @@ class DiarizationAnnotation(Annotation):
     def load_annotation_file(cls, path: str) -> "DiarizationAnnotation":
         pyannote_annotation: dict[str, Annotation] = load_rttm(path)
         if len(pyannote_annotation) != 1:
-            raise ValueError(
-                f"Expected exactly one annotation in {path}, but got {len(pyannote_annotation)}"
-            )
+            raise ValueError(f"Expected exactly one annotation in {path}, but got {len(pyannote_annotation)}")
 
         pyannote_annotation: Annotation = list(pyannote_annotation.values())[0]
         return cls.from_pyannote_annotation(pyannote_annotation)
 
     @property
     def timestamps_start(self) -> np.ndarray:
-        return np.array(
-            [segment.start for segment, _, _ in self.itertracks(yield_label=True)]
-        )
+        return np.array([segment.start for segment, _, _ in self.itertracks(yield_label=True)])
 
     @property
     def timestamps_end(self) -> np.ndarray:
-        return np.array(
-            [segment.end for segment, _, _ in self.itertracks(yield_label=True)]
-        )
+        return np.array([segment.end for segment, _, _ in self.itertracks(yield_label=True)])
 
     @property
     def speakers(self) -> np.ndarray:
-        return np.array(
-            [speaker for _, _, speaker in self.itertracks(yield_label=True)]
-        )
+        return np.array([speaker for _, _, speaker in self.itertracks(yield_label=True)])
 
 
 # ASR or Orchestration Prediction

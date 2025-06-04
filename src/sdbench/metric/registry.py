@@ -1,7 +1,6 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-from enum import Enum
 from typing import Callable, ClassVar, Type, TypeVar
 
 from pyannote.metrics.base import BaseMetric
@@ -21,6 +20,7 @@ from pyannote.metrics.diarization import (
 from ..pipeline.base import PipelineType
 from .metric import MetricOptions
 
+
 T = TypeVar("T", bound=BaseMetric)
 
 
@@ -31,9 +31,7 @@ class MetricRegistry:
     Each metric can be supported by multiple pipeline types.
     """
 
-    _metrics: ClassVar[
-        dict[MetricOptions, dict[str, tuple[PipelineType, ...] | Type[BaseMetric]]]
-    ] = {}
+    _metrics: ClassVar[dict[MetricOptions, dict[str, tuple[PipelineType, ...] | Type[BaseMetric]]]] = {}
 
     @classmethod
     def register(
@@ -137,13 +135,9 @@ class MetricRegistry:
 
 # Register all existing and interesting metrics from pyannote.metrics
 # Custom metrics will be registered in their own files
-MetricRegistry.register(
-    DiarizationErrorRate, PipelineType.DIARIZATION, MetricOptions.DER
-)
+MetricRegistry.register(DiarizationErrorRate, PipelineType.DIARIZATION, MetricOptions.DER)
 MetricRegistry.register(JaccardErrorRate, PipelineType.DIARIZATION, MetricOptions.JER)
-MetricRegistry.register(
-    DiarizationPurity, PipelineType.DIARIZATION, MetricOptions.DIARIZATION_PURITY
-)
+MetricRegistry.register(DiarizationPurity, PipelineType.DIARIZATION, MetricOptions.DIARIZATION_PURITY)
 MetricRegistry.register(
     DiarizationPurityCoverageFMeasure,
     PipelineType.DIARIZATION,
@@ -154,9 +148,7 @@ MetricRegistry.register(
     PipelineType.DIARIZATION,
     MetricOptions.DIARIZATION_HOMOGENEITY,
 )
-MetricRegistry.register(
-    DetectionErrorRate, PipelineType.DIARIZATION, MetricOptions.DETECTION_ERROR_RATE
-)
+MetricRegistry.register(DetectionErrorRate, PipelineType.DIARIZATION, MetricOptions.DETECTION_ERROR_RATE)
 MetricRegistry.register(
     DetectionCostFunction,
     PipelineType.DIARIZATION,

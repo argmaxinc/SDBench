@@ -7,6 +7,7 @@ import numpy as np
 
 from sdbench.pipeline.diarization.coreml_pipeline.audio_chunker import AudioChunker
 
+
 CHUNK_LENGTH = 30
 WINDOW_LENGTH = 10
 SAMPLE_RATE = 16_000
@@ -30,9 +31,7 @@ class TestAudioChunker(unittest.TestCase):
         for chunk_stride in chunk_strides:
             chunker = self.build_chunker(chunk_stride=chunk_stride, window_stride=1)
             chunks, original_length, padded_length = chunker.chunk(waveform)
-            self.assertEqual(
-                len(chunks), 1, f"Expected 1 chunk for stride {chunk_stride}"
-            )
+            self.assertEqual(len(chunks), 1, f"Expected 1 chunk for stride {chunk_stride}")
             self.assertEqual(
                 chunks[0].shape[0],
                 original_length,
@@ -43,9 +42,7 @@ class TestAudioChunker(unittest.TestCase):
                 padded_length,
                 "Chunk length should equal padded length",
             )
-            self.assertTrue(
-                np.allclose(chunks[0], waveform), "Chunk should equal original waveform"
-            )
+            self.assertTrue(np.allclose(chunks[0], waveform), "Chunk should equal original waveform")
 
     def test_audio_shorter_than_chunk(self) -> None:
         """Test when audio is shorter than chunk length."""
@@ -54,12 +51,8 @@ class TestAudioChunker(unittest.TestCase):
         chunks, original_length, padded_length = chunker.chunk(waveform)
 
         self.assertEqual(len(chunks), 1, "Should have one chunk")
-        self.assertEqual(
-            original_length, len(waveform), "Original length should match input"
-        )
-        self.assertEqual(
-            padded_length, CHUNK_LENGTH * SAMPLE_RATE, "Should pad to chunk length"
-        )
+        self.assertEqual(original_length, len(waveform), "Original length should match input")
+        self.assertEqual(padded_length, CHUNK_LENGTH * SAMPLE_RATE, "Should pad to chunk length")
         self.assertTrue(
             np.allclose(chunks[0][:original_length], waveform),
             "Original audio should be preserved",
@@ -75,12 +68,8 @@ class TestAudioChunker(unittest.TestCase):
         chunks, original_length, padded_length = chunker.chunk(waveform)
 
         self.assertEqual(len(chunks), 2, "Should have two chunks")
-        self.assertEqual(
-            original_length, len(waveform), "Original length should match input"
-        )
-        self.assertEqual(
-            padded_length, 51 * SAMPLE_RATE, "Should pad to fit second chunk"
-        )
+        self.assertEqual(original_length, len(waveform), "Original length should match input")
+        self.assertEqual(padded_length, 51 * SAMPLE_RATE, "Should pad to fit second chunk")
 
         # Verify chunk contents
         self.assertTrue(
@@ -100,9 +89,7 @@ class TestAudioChunker(unittest.TestCase):
         chunks, original_length, padded_length = chunker.chunk(waveform)
 
         self.assertEqual(len(chunks), 2, "Should have two chunks")
-        self.assertEqual(
-            original_length, len(waveform), "Original length should match input"
-        )
+        self.assertEqual(original_length, len(waveform), "Original length should match input")
         self.assertEqual(padded_length, len(waveform), "Should not need padding")
 
         # Verify chunk contents
@@ -164,9 +151,7 @@ class TestAudioChunker(unittest.TestCase):
         masks = chunker.get_windows_mask(audio_length_seconds)
 
         # Should have 1 chunk
-        self.assertEqual(
-            len(chunks), 1, f"Should have one chunk, but got {len(chunks)}"
-        )
+        self.assertEqual(len(chunks), 1, f"Should have one chunk, but got {len(chunks)}")
         # Should only the first window should be valid
         nonzero_masks = masks[0, :, 0].nonzero()[0]
         self.assertEqual(
@@ -191,9 +176,7 @@ class TestAudioChunker(unittest.TestCase):
                 chunk_stride=CHUNK_LENGTH + window_stride - WINDOW_LENGTH,
                 window_stride=window_stride,
             )
-            mask, window_intervals = chunker.get_windows_mask(
-                audio_length, return_intervals=True
-            )
+            mask, window_intervals = chunker.get_windows_mask(audio_length, return_intervals=True)
             flat_mask = mask.flatten()
             flat_window_intervals = window_intervals.reshape(-1, 2)
 

@@ -4,17 +4,16 @@
 import os
 import warnings
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import Any, Generic, TypeVar
+
 
 # Disable all warnings for this module
 warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-from argmaxtools.utils import get_logger
-
 import wandb
+from argmaxtools.utils import get_logger
 
 from ..metric import MetricOptions
 from ..pipeline.base import PredictionProtocol
@@ -25,6 +24,7 @@ from .data_models import (
     TaskResult,
     TranscriptionSampleResult,
 )
+
 
 SampleResult = TypeVar("SampleResult", bound=BaseSampleResult)
 
@@ -60,9 +60,7 @@ class WandbLogger(ABC, Generic[SampleResult]):
         """
         pass
 
-    def get_global_metrics(
-        self, global_results: list[GlobalResult]
-    ) -> dict[str, float]:
+    def get_global_metrics(self, global_results: list[GlobalResult]) -> dict[str, float]:
         """Get global metrics from results.
 
         Args:
@@ -77,9 +75,7 @@ class WandbLogger(ABC, Generic[SampleResult]):
             for global_result in global_results
         }
 
-    def get_task_results_table(
-        self, task_results: list[TaskResult]
-    ) -> dict[str, wandb.Table]:
+    def get_task_results_table(self, task_results: list[TaskResult]) -> dict[str, wandb.Table]:
         """Create a table of task results.
 
         Args:
@@ -97,16 +93,12 @@ class WandbLogger(ABC, Generic[SampleResult]):
         for task_result in task_results:
             all_keys.update(task_result.detailed_result.keys())
         for key in all_keys:
-            df[f"detailed_{key}"] = df["detailed_result"].apply(
-                lambda x: x.get(key, None)
-            )
+            df[f"detailed_{key}"] = df["detailed_result"].apply(lambda x: x.get(key, None))
         df = df.drop(columns=["detailed_result"])
 
         return {f"{dataset_name}/task_results_table": wandb.Table(dataframe=df)}
 
-    def generate_prediction_artifact(
-        self, sample_results: list[SampleResult]
-    ) -> wandb.Artifact:
+    def generate_prediction_artifact(self, sample_results: list[SampleResult]) -> wandb.Artifact:
         """Create a wandb artifact containing prediction files.
 
         Args:
@@ -134,9 +126,7 @@ class WandbLogger(ABC, Generic[SampleResult]):
         artifact.add_dir(save_dir)
         return artifact
 
-    def get_sample_results_table(
-        self, sample_results: list[SampleResult]
-    ) -> dict[str, Any]:
+    def get_sample_results_table(self, sample_results: list[SampleResult]) -> dict[str, Any]:
         """Create a table of sample results.
 
         Args:
@@ -145,19 +135,12 @@ class WandbLogger(ABC, Generic[SampleResult]):
         Returns:
             Dictionary mapping dataset name to wandb.Table
         """
-        self.logger.info(f"Creating sample results table")
+        self.logger.info("Creating sample results table")
 
         # Convert to list of dicts
         rows = [sample_result.model_dump() for sample_result in sample_results]
         # Remove row keys that are np.ndarray
-        rows = [
-            {
-                k: v
-                for k, v in row.items()
-                if not isinstance(v, (np.ndarray, PredictionProtocol))
-            }
-            for row in rows
-        ]
+        rows = [{k: v for k, v in row.items() if not isinstance(v, (np.ndarray, PredictionProtocol))} for row in rows]
         dataset_name = rows[0]["dataset_name"]
 
         # Create results table
@@ -167,9 +150,7 @@ class WandbLogger(ABC, Generic[SampleResult]):
             )
         }
 
-    def get_latency_metrics(
-        self, sample_results: list[SampleResult]
-    ) -> dict[str, float]:
+    def get_latency_metrics(self, sample_results: list[SampleResult]) -> dict[str, float]:
         """Calculate latency metrics from sample results.
 
         Args:
@@ -179,12 +160,8 @@ class WandbLogger(ABC, Generic[SampleResult]):
             Dictionary mapping metric names to their values
         """
         dataset_name = sample_results[0].dataset_name
-        prediction_times = np.array(
-            [sample_result.prediction_time for sample_result in sample_results]
-        )
-        audio_durations = np.array(
-            [sample_result.audio_duration for sample_result in sample_results]
-        )
+        prediction_times = np.array([sample_result.prediction_time for sample_result in sample_results])
+        audio_durations = np.array([sample_result.audio_duration for sample_result in sample_results])
 
         total_audio_duration = np.sum(audio_durations)
         total_prediction_time = np.sum(prediction_times)
@@ -242,9 +219,7 @@ class WandbLogger(ABC, Generic[SampleResult]):
 class DiarizationWandbLogger(WandbLogger[DiarizationSampleResult]):
     """Logger for diarization pipeline results."""
 
-    def log_embeddings_artifact(
-        self, sample_results: list[DiarizationSampleResult]
-    ) -> None:
+    def log_embeddings_artifact(self, sample_results: list[DiarizationSampleResult]) -> None:
         dataset_name = sample_results[0].dataset_name
         pipeline_name = sample_results[0].pipeline_name
 
@@ -272,9 +247,7 @@ class DiarizationWandbLogger(WandbLogger[DiarizationSampleResult]):
 
         wandb.log_artifact(embeddings_artifact)
 
-    def get_der_components(
-        self, global_results: list[GlobalResult]
-    ) -> dict[str, wandb.Table]:
+    def get_der_components(self, global_results: list[GlobalResult]) -> dict[str, wandb.Table]:
         """Create a table of DER components.
 
         Args:
@@ -284,13 +257,9 @@ class DiarizationWandbLogger(WandbLogger[DiarizationSampleResult]):
             Dictionary mapping dataset name to wandb.Table with DER breakdown
         """
         self.logger.info("Getting DER components")
-        der_global_results = [
-            g for g in global_results if g.metric_name == MetricOptions.DER.value
-        ]
+        der_global_results = [g for g in global_results if g.metric_name == MetricOptions.DER.value]
         if len(der_global_results) == 0 or len(der_global_results) > 1:
-            raise ValueError(
-                "There should be only one DER global result as logging is done per dataset"
-            )
+            raise ValueError("There should be only one DER global result as logging is done per dataset")
 
         dataset_name = der_global_results[0].dataset_name
         der_detailed_result = [g.detailed_result for g in der_global_results]
@@ -317,9 +286,7 @@ class DiarizationWandbLogger(WandbLogger[DiarizationSampleResult]):
         last_cols = [col for col in der_components_df.columns if col not in first_cols]
 
         return {
-            f"{dataset_name}/der_breakdown_table": wandb.Table(
-                dataframe=der_components_df[first_cols + last_cols]
-            )
+            f"{dataset_name}/der_breakdown_table": wandb.Table(dataframe=der_components_df[first_cols + last_cols])
         }
 
     def custom_log(

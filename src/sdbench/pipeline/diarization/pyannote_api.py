@@ -17,6 +17,7 @@ from ...pipeline_prediction import DiarizationAnnotation
 from ..base import Pipeline, PipelineType, register_pipeline
 from .common import DiarizationOutput, DiarizationPipelineConfig
 
+
 __all__ = ["PyannoteApiPipeline", "PyannoteApiConfig"]
 
 logger = get_logger(__name__)
@@ -146,9 +147,7 @@ class PyannoteApi:
         response.raise_for_status()
         return response
 
-    def get_job_results(
-        self, diarization_response: requests.Response
-    ) -> PyannoteApiOutput:
+    def get_job_results(self, diarization_response: requests.Response) -> PyannoteApiOutput:
         data = diarization_response.json()
         headers = diarization_response.headers
         job_id = data["jobId"]
@@ -183,15 +182,13 @@ class PyannoteApi:
                 response.raise_for_status()
 
                 # Update rate limit information
-                remaining_requests = int(
-                    response.headers.get("X-RateLimit-Remaining", remaining_requests)
-                )
+                remaining_requests = int(response.headers.get("X-RateLimit-Remaining", remaining_requests))
                 reset_time = int(response.headers.get("X-RateLimit-Reset", reset_time))
                 # Add a small buffer to avoid hitting rate limits
                 safe_remaining = max(1, remaining_requests - self.request_buffer)
                 delay = reset_time / safe_remaining
                 logger.info(
-                    f"Rate limit info - Remaining: {remaining_requests}, Reset: {reset_time}s, Delay: {delay*1000:.0f}ms"
+                    f"Rate limit info - Remaining: {remaining_requests}, Reset: {reset_time}s, Delay: {delay * 1000:.0f}ms"
                 )
 
                 job_data = response.json()
@@ -200,9 +197,7 @@ class PyannoteApi:
 
                 if job_status == "succeeded":
                     elapsed_time = time.time() - start_time
-                    logger.info(
-                        f"Job {job_id} completed successfully after {elapsed_time:.1f}s"
-                    )
+                    logger.info(f"Job {job_id} completed successfully after {elapsed_time:.1f}s")
                     job_data["jobPollingElapsedTime"] = elapsed_time
                     return PyannoteApiOutput.model_validate(job_data)
                 elif job_status == "failed":
@@ -214,7 +209,7 @@ class PyannoteApi:
                     raise Exception("Job was canceled")
 
                 elapsed_time = time.time() - start_time
-                logger.info(f"Waiting {delay*1000:.0f}ms before next request")
+                logger.info(f"Waiting {delay * 1000:.0f}ms before next request")
                 time.sleep(delay)
 
             except requests.exceptions.RequestException as e:
@@ -224,9 +219,7 @@ class PyannoteApi:
         logger.error(f"Job {job_id} timed out after {elapsed_time:.1f}s")
         raise TimeoutError(f"Job timed out after {elapsed_time:.1f} seconds")
 
-    def __call__(
-        self, audio_path: str, num_speakers: int | None = None
-    ) -> PyannoteApiOutput:
+    def __call__(self, audio_path: str, num_speakers: int | None = None) -> PyannoteApiOutput:
         audio_url = self.get_presigned_url(audio_path)
         diarization_response = self.diarize(audio_url, num_speakers)
         return self.get_job_results(diarization_response)
@@ -263,9 +256,7 @@ class PyannoteApiPipeline(Pipeline):
             num_speakers=input_sample.get("num_speakers"),
         )
 
-    def parse_input(
-        self, input_sample: DiarizationSample
-    ) -> dict[str, str | int | None]:
+    def parse_input(self, input_sample: DiarizationSample) -> dict[str, str | int | None]:
         audio_path = input_sample.save_audio(TEMP_AUDIO_DIR)
         # setting as attribute to remove after parsing output
         self._audio_path = audio_path
