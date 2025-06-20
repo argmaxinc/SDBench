@@ -43,7 +43,7 @@ def create_pipeline(name: str, config_dict: dict[str, Any]) -> Pipeline:
 # Orchestration pipeline has three distinct cases:
 # 1. Where we run indepedently the ASR and the diarization pipeline and then merge the results
 # 2. Where we leverage VAD or Diarization Pipeline to generate speech segments and then run ASR on each segment
-# 3. Black box systems where it will work as a wrapper for an existing provider e.g. WhisperX, WhisperKitPro -
+# 3. Black box systems where it will work as a wrapper for an existing provider e.g. WhisperX
 # they can have their own implemenation files
 
 

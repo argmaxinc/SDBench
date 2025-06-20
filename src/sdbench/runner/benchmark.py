@@ -7,10 +7,9 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 import tqdm
+import wandb
 from argmaxtools.utils import get_logger
 from pyannote.metrics.base import BaseMetric
-
-import wandb
 
 from ..dataset import DiarizationDataset, DiarizationSample
 from ..metric import MetricRegistry

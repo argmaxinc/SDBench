@@ -12,9 +12,8 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-from argmaxtools.utils import get_logger
-
 import wandb
+from argmaxtools.utils import get_logger
 
 from ..metric import MetricOptions
 from ..pipeline.base import PredictionProtocol
