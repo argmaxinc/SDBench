@@ -8,7 +8,7 @@ defaults:
     - ami-sdm
     - american-life-podcast
     - ava-avd
-  - wandb_config: active
+  - wandb_config: disabled
   - metrics:
     - wer
     - wder
