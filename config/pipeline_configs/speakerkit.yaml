@@ -1,0 +1,3 @@
+SpeakerKitPipeline:
+  config:
+    cli_path: <add-yout-cli-path>
