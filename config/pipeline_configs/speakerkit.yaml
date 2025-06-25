@@ -1,5 +1,5 @@
 SpeakerKitPipeline:
   config:
     out_dir: speakerkit-report
-    cli_path: <path-to-speakerkit-cli>
+    cli_path: <path-to-speakerkit-cli> # contact argmax for cli access
     model_path: <path-to-speakerkit-models> # For reproduction of SDBench results just comment out this line

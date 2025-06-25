@@ -77,7 +77,9 @@ class SpeakerKitPipeline(Pipeline):
     pipeline_type = PipelineType.DIARIZATION
 
     def build_pipeline(self) -> Callable[[SpeakerKitInput], Path]:
-        return SpeakerKitCli(cli_path=self.config.cli_path, model_path=self.config.model_path)
+        return SpeakerKitCli(
+            cli_path=self.config.cli_path, model_path=self.config.model_path
+        )
 
     def parse_input(self, input_sample: DiarizationSample) -> SpeakerKitInput:
         inputs: SpeakerKitInput = {
