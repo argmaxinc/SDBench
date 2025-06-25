@@ -1,3 +1,5 @@
 SpeakerKitPipeline:
   config:
-    cli_path: <add-yout-cli-path>
+    out_dir: speakerkit-report
+    cli_path: <path-to-speakerkit-cli>
+    model_path: <path-to-speakerkit-models> # For reproduction of SDBench results just comment out this line

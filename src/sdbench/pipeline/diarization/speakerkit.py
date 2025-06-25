@@ -22,6 +22,7 @@ TEMP_AUDIO_DIR = Path("audio_temp")
 
 class SpeakerKitPipelineConfig(DiarizationPipelineConfig):
     cli_path: str
+    model_path: str | None = None
 
 
 class SpeakerKitInput(TypedDict):
@@ -31,8 +32,9 @@ class SpeakerKitInput(TypedDict):
 
 
 class SpeakerKitCli:
-    def __init__(self, cli_path: str):
+    def __init__(self, cli_path: str, model_path: str | None = None):
         self.cli_path = cli_path
+        self.model_path = model_path
 
     def __call__(self, speakerkit_input: SpeakerKitInput) -> Path:
         try:
@@ -47,6 +49,8 @@ class SpeakerKitCli:
                 str(speakerkit_input["output_path"]),
                 "--verbose",
             ]
+            if self.model_path:
+                cmd.extend(["--model-path", self.model_path])
         except KeyError as e:
             raise ValueError(
                 "`SPEAKERKIT_API_KEY` environment variable is not set"
@@ -73,7 +77,7 @@ class SpeakerKitPipeline(Pipeline):
     pipeline_type = PipelineType.DIARIZATION
 
     def build_pipeline(self) -> Callable[[SpeakerKitInput], Path]:
-        return SpeakerKitCli(cli_path=self.config.cli_path)
+        return SpeakerKitCli(cli_path=self.config.cli_path, model_path=self.config.model_path)
 
     def parse_input(self, input_sample: DiarizationSample) -> SpeakerKitInput:
         inputs: SpeakerKitInput = {
