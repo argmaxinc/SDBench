@@ -1,0 +1,8 @@
+FireworksStreamingPipeline:
+  config:
+   sample_rate: 16000
+   channels: 1
+   sample_width: 2
+   chunksize_ms: 50
+   endpoint_url: "ws://audio-streaming.us-virginia-1.direct.fireworks.ai/v1/audio/transcriptions/streaming"
+   model: "whisper-v3-turbo"

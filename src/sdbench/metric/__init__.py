@@ -8,4 +8,13 @@ from .speaker_count_metrics import (
     SpeakerCountingErrorRate,
     SpeakerCountMeanAbsoluteError,
 )
+from .streaming_latency_metrics import (
+    ConfirmedStreamingLatency,
+    ModelTimestampBasedConfirmedStreamingLatency,
+    ModelTimestampBasedStreamingLatency,
+    NumDeletions,
+    NumInsertions,
+    NumSubstitutions,
+    StreamingLatency,
+)
 from .word_error_metrics import WordDiarizationErrorRate, WordErrorRate

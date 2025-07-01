@@ -231,7 +231,12 @@ class WordDiarizationErrorRate(BaseWordErrorMetric):
 
 
 @MetricRegistry.register_metric(
-    (PipelineType.TRANSCRIPTION, PipelineType.ORCHESTRATION), MetricOptions.WER
+    (
+        PipelineType.TRANSCRIPTION,
+        PipelineType.ORCHESTRATION,
+        PipelineType.STREAMING_TRANSCRIPTION,
+    ),
+    MetricOptions.WER,
 )
 class WordErrorRate(BaseWordErrorMetric):
     """Word Error Rate (WER) implementation.

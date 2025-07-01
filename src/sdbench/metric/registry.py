@@ -1,7 +1,6 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-from enum import Enum
 from typing import Callable, ClassVar, Type, TypeVar
 
 from pyannote.metrics.base import BaseMetric

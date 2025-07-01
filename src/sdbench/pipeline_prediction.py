@@ -139,3 +139,23 @@ class Transcript(BaseModel):
         df = pd.DataFrame(data)
         df.to_csv(path, index=False)
         return path
+
+
+class StreamingTranscript(BaseModel):
+    transcript: str = Field(..., description="")
+    audio_cursor: list[float] | None
+    interim_results: list[str] | None
+    confirmed_audio_cursor: list[float] | None
+    confirmed_interim_results: list[str] | None
+    model_timestamps_hypot: list | None
+    model_timestamps_confirmed: list | None
+    prediction_time: float | None
+
+    def get_words(self) -> list[str]:
+        return [word for word in self.transcript.split(" ")]
+
+    def get_speakers(self) -> list[str] | None:
+        return None
+
+    def to_annotation_file(self, output_dir: str, filename: str) -> str:
+        ...

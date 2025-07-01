@@ -62,3 +62,37 @@ class MetricOptions(Enum):
     # Evaluates transcription accuracy at word level
     # Ref: https://en.wikipedia.org/wiki/Word_error_rate
     WER = "wer"
+
+    # Streaming Transcription Latency Based on Hypothesis(Unconfirmed) Transcript
+    # Evaluates the Latency of Realtime Transcription
+    # Time passed after an audio chunk is sent until its corresponding transcription is received.
+    STRM_LATENCY = "streaming_latency"
+
+    # Streaming Transcription Latency Based on Confirmed Transcript
+    # Evaluates the Latency of Realtime Transcription
+    # Time passed after an audio chunk is sent until its corresponding transcription is received.
+    CONFIRMED_STRM_LATENCY = "confirmed_streaming_latency"
+
+    # Streaming Transcription Latency Based on Confirmed Transcript and Model Word Timestamps
+    # Evaluates the Latency of Realtime Transcription
+    # Time passed after an audio chunk is sent until its corresponding transcription is received.
+    MODELTIMESTAMP_STRM_LATENCY = "model_timestamp_streaming_latency"
+
+    # Streaming Transcription Latency Based on Confirmed Transcript and Model Word Timestamps
+    # Evaluates the Latency of Realtime Transcription
+    # Time passed after an audio chunk is sent until its corresponding transcription is received.
+    MODELTIMESTAMP_CONFIRMED_STRM_LATENCY = (
+        "model_timestamp_confirmed_streaming_latency"
+    )
+
+    # Number of Corrections Metrics for Streaming Transcription
+    # Evaluates the Number of Deletions Based on Previous Interim Transcript
+    NUM_DEL = "number_deletions"
+
+    # Number of Corrections Metrics for Streaming Transcription
+    # Evaluates the Number of Substitutions Based on Previous Interim Transcript
+    NUM_SUBS = "number_substitutions"
+
+    # Number of Corrections Metrics for Streaming Transcription
+    # Evaluates the Number of Insertions Based on Previous Interim Transcript
+    NUM_INS = "number_insertions"
