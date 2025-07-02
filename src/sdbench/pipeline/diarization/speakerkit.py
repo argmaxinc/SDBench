@@ -2,6 +2,7 @@
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
 import os
+import re
 import subprocess
 from pathlib import Path
 from typing import Callable, TypedDict
@@ -36,7 +37,7 @@ class SpeakerKitCli:
         self.cli_path = cli_path
         self.model_path = model_path
 
-    def __call__(self, speakerkit_input: SpeakerKitInput) -> Path:
+    def __call__(self, speakerkit_input: SpeakerKitInput) -> tuple[Path, float]:
         try:
             cmd = [
                 self.cli_path,
@@ -68,7 +69,12 @@ class SpeakerKitCli:
         # Delete the audio file
         speakerkit_input["audio_path"].unlink()
 
-        return speakerkit_input["output_path"]
+        # Parse stdout and take the total time it took to diarize
+        pattern = r"Model Load Time:\s+\d+\.\d+\s+ms\nTotal Time:\s+(\d+\.\d+)\s+ms"
+        matches = re.search(pattern, result.stdout)
+        total_time = float(matches.group(1))
+
+        return speakerkit_input["output_path"], total_time / 1000
 
 
 @register_pipeline
@@ -76,7 +82,7 @@ class SpeakerKitPipeline(Pipeline):
     _config_class = SpeakerKitPipelineConfig
     pipeline_type = PipelineType.DIARIZATION
 
-    def build_pipeline(self) -> Callable[[SpeakerKitInput], Path]:
+    def build_pipeline(self) -> Callable[[SpeakerKitInput], tuple[Path, float]]:
         return SpeakerKitCli(
             cli_path=self.config.cli_path, model_path=self.config.model_path
         )
@@ -92,6 +98,6 @@ class SpeakerKitPipeline(Pipeline):
 
         return inputs
 
-    def parse_output(self, output: Path) -> DiarizationOutput:
-        prediction = DiarizationAnnotation.load_annotation_file(output)
-        return DiarizationOutput(prediction=prediction)
+    def parse_output(self, output: tuple[Path, float]) -> DiarizationOutput:
+        prediction = DiarizationAnnotation.load_annotation_file(output[0])
+        return DiarizationOutput(prediction=prediction, prediction_time=output[1])
