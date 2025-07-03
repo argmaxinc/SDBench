@@ -21,12 +21,16 @@ load_dotenv()
 
 logger = get_logger(__name__)
 
+# Some parts of this code are adapted from the example provided at:
+# https://developers.deepgram.com/docs/measuring-streaming-latency
+
 
 class DeepgramApi:
     def __init__(self, cfg) -> None:
         self.realtime_resolution = 0.020
         self.model_version = "nova-3"
         self.api_key = os.getenv("DEEPGRAM_API_KEY")
+        assert self.api_key is not None, "Please set API key in environment"
         self.channels = cfg.channels
         self.sample_width = cfg.sample_width
         self.sample_rate = cfg.sample_rate

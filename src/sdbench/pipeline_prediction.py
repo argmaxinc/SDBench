@@ -9,6 +9,7 @@ import pandas as pd
 from pyannote.core import Annotation
 from pyannote.database.util import load_rttm
 from pydantic import BaseModel, Field
+import json
 
 
 # Diarization Prediction
@@ -158,4 +159,15 @@ class StreamingTranscript(BaseModel):
         return None
 
     def to_annotation_file(self, output_dir: str, filename: str) -> str:
-        ...
+        path = os.path.join(output_dir, f"{filename.split('.')[0]}.json")
+        data = {
+                "interim_results": self.interim_results,
+                "audio_cursor": self.audio_cursor,
+                "confirmed_audio_cursor": self.confirmed_audio_cursor,
+                "confirmed_interim_results": self.confirmed_interim_results,
+                "model_timestamps_hypot": self.model_timestamps_hypot,
+                "model_timestamps_confirmed": self.model_timestamps_confirmed,
+                }
+        with open(path, "w") as f:
+            json.dump(data, f, indent=2)
+        return path

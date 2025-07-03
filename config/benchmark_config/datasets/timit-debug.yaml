@@ -1,4 +1,4 @@
-timit:
+timit-debug:
   dataset_id: kylelovesllms/timit_asr
   split: test
   subset: null

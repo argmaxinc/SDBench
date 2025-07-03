@@ -23,11 +23,15 @@ load_dotenv()
 
 logger = get_logger(__name__)
 
+# Some parts of this code are adapted from the example provided at:
+# https://docs.fireworks.ai/api-reference/audio-streaming-transcriptions
+
 
 class FireworksApi:
     def __init__(self, cfg) -> None:
         self.chunk_size_ms = cfg.chunksize_ms
         self.api_key = os.getenv("FIREWORKS_API_KEY")
+        assert self.api_key is not None, "Please set API key in environment"
         self.channels = cfg.channels
         self.sample_width = cfg.sample_width
         self.sample_rate = cfg.sample_rate

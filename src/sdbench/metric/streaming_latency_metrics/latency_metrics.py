@@ -21,19 +21,23 @@ from ..registry import MetricRegistry
 normalizer = BasicTextNormalizer()
 
 logger = get_logger(__name__)
-STRM_LATENCY = "streaming_latency"
+STREAMING_LATENCY = "streaming_latency"
 AVG_LAT = "scaled_avg_latency"
 AUD_DUR = "audio_duration"
-CONFIRMED_STRM_LATENCY = "confirmed_streaming_latency"
+CONFIRMED_STREAMING_LATENCY = "confirmed_streaming_latency"
 CONFIRMED_AVG_LAT = "confirmed_scaled_avg_latency"
 CONFIRMED_AUD_DUR = "confirmed_audio_duration"
-MODEL_STRM_LATENCY = "model_timestamp_streaming_latency"
+MODEL_STREAMING_LATENCY = "model_timestamp_streaming_latency"
 MODEL_AVG_LAT = "model_timestamp_scaled_avg_latency"
 MODEL_AUD_DUR = "model_timestamp_audio_duration"
-MODEL_CONFIRMED_STRM_LATENCY = "model_timestamp_confirmed_streaming_latency"
+MODEL_CONFIRMED_STREAMING_LATENCY = "model_timestamp_confirmed_streaming_latency"
 MODEL_CONFIRMED_AVG_LAT = "model_timestamp_confirmed_scaled_avg_latency"
 MODEL_CONFIRMED_AUD_DUR = "model_timestamp_confirmed_audio_duration"
 DEFAULT_SAMPLE_RATE = 16000
+
+# Latency metrics are adapted from the example at:
+# https://developers.deepgram.com/docs/measuring-streaming-latency
+# with slight modifications to the original metric definitions.
 
 
 class BaseStreamingLatency(BaseMetric):
@@ -103,7 +107,7 @@ class BaseStreamingLatency(BaseMetric):
                 ref_start = out.alignments[0][first_index].ref_start_idx
                 ref_end = out.alignments[0][last_index].ref_end_idx
                 if l == 0:
-                    start_tmstp = words[ref_start].start / DEFAULT_SAMPLE_RATE
+                    start_timestamp = words[ref_start].start / DEFAULT_SAMPLE_RATE
                 else:
                     # Find the updated segment
                     out_diff = jiwer.process_words(
@@ -128,7 +132,7 @@ class BaseStreamingLatency(BaseMetric):
                             diff_ref_start, out.alignments[0]
                         )
                         try:
-                            start_tmstp = words[actual_idx].start / DEFAULT_SAMPLE_RATE
+                            start_timestamp = words[actual_idx].start / DEFAULT_SAMPLE_RATE
                         # TODO: Handle Edge Cases
                         except:
                             continue
@@ -137,15 +141,15 @@ class BaseStreamingLatency(BaseMetric):
                         # exclude this interim result from latency calculation
                         continue
 
-                end_tmstp = words[ref_end - 1].end / DEFAULT_SAMPLE_RATE
-                gt_audio_duration.append(end_tmstp - start_tmstp)
+                end_timestamp = words[ref_end - 1].end / DEFAULT_SAMPLE_RATE
+                gt_audio_duration.append(end_timestamp - start_timestamp)
                 if model_timestamps_based:
-                    start_tmstp_model = model_timestamps[l][0]["start"]
-                    end_tmstp_model = model_timestamps[l][-1]["end"]
-                    transcript_cursor_model.append(end_tmstp_model)
-                    model_audio_duration.append(end_tmstp_model - start_tmstp_model)
+                    start_timestamp_model = model_timestamps[l][0]["start"]
+                    end_timestamp_model = model_timestamps[l][-1]["end"]
+                    transcript_cursor_model.append(end_timestamp_model)
+                    model_audio_duration.append(end_timestamp_model - start_timestamp_model)
 
-                transcript_cursor_gt.append(start_tmstp + (end_tmstp - start_tmstp))
+                transcript_cursor_gt.append(start_timestamp + (end_timestamp - start_timestamp))
                 gt_min_latency_l.append(audio_cursor[l] - transcript_cursor_gt[-1])
                 if model_timestamps_based:
                     model_min_latency_l.append(
@@ -248,13 +252,8 @@ class BaseStreamingLatency(BaseMetric):
         return components[self.metric_name_]
 
 
-# DISCLAIMER:
-# This metric is not well suited for the AssemblyAI pipeline due to interim result update granularity.
-# Most APIs provide word-level interim updates, whereas AssemblyAI tends to make frequent sub-word level updates.
-
-
 @MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.STRM_LATENCY
+    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.STREAMING_LATENCY
 )
 class StreamingLatency(BaseStreamingLatency):
     """Metric Calculation
@@ -271,7 +270,7 @@ class StreamingLatency(BaseStreamingLatency):
 
     @classmethod
     def metric_name(cls):
-        return STRM_LATENCY
+        return STREAMING_LATENCY
 
     @classmethod
     def metric_components(cls) -> MetricComponents:
@@ -308,18 +307,13 @@ class StreamingLatency(BaseStreamingLatency):
         return detail[AVG_LAT] / detail[AUD_DUR]
 
 
-# DISCLAIMER:
-# This metric is not well suited for the AssemblyAI pipeline due to interim result update granularity.
-# Most APIs provide word-level interim updates, whereas AssemblyAI tends to make frequent sub-word level updates.
-
-
 @MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.CONFIRMED_STRM_LATENCY
+    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.CONFIRMED_STREAMING_LATENCY
 )
 class ConfirmedStreamingLatency(BaseStreamingLatency):
     @classmethod
     def metric_name(cls):
-        return CONFIRMED_STRM_LATENCY
+        return CONFIRMED_STREAMING_LATENCY
 
     @classmethod
     def metric_components(cls) -> MetricComponents:
@@ -367,7 +361,7 @@ class ConfirmedStreamingLatency(BaseStreamingLatency):
 class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
     @classmethod
     def metric_name(cls):
-        return MODEL_STRM_LATENCY
+        return MODEL_STREAMING_LATENCY
 
     @classmethod
     def metric_components(cls) -> MetricComponents:
@@ -411,12 +405,12 @@ class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
 
 
 @MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.MODELTIMESTAMP_STRM_LATENCY
+    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.MODELTIMESTAMP_STREAMING_LATENCY
 )
 class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
     @classmethod
     def metric_name(cls):
-        return MODEL_STRM_LATENCY
+        return MODEL_STREAMING_LATENCY
 
     @classmethod
     def metric_components(cls) -> MetricComponents:

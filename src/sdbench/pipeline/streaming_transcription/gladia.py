@@ -24,11 +24,15 @@ load_dotenv()
 
 logger = get_logger(__name__)
 
+# Some parts of this code are adapted from the example provided at:
+# https://github.com/gladiaio/gladia-samples/tree/main/python/src/streaming
+
 
 class GladiaApi:
     def __init__(self, cfg) -> None:
         self.chunk_size_ms = cfg.chunksize_ms
         self.api_key = os.getenv("GLADIA_API_KEY")
+        assert self.api_key is not None, "Please set API key in environment"
         self.channels = cfg.channels
         self.sample_width = cfg.sample_width
         self.sample_rate = cfg.sample_rate

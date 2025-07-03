@@ -18,7 +18,7 @@ from ..registry import MetricRegistry
 
 logger = get_logger(__name__)
 NUM_DELETIONS = "num_deletions"
-NUM_SUBS = "num_substutions"
+NUM_SUBSTITUTIONS = "num_substitutions"
 NUM_INSERTIONS = "num_insertions"
 
 normalizer = BasicTextNormalizer()
@@ -118,7 +118,7 @@ class BaseNumCorrections(BaseMetric):
 
 
 @MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_DEL
+    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_DELETIONS
 )
 class NumDeletions(BaseNumCorrections):
     """Metric Calculation"""
@@ -148,24 +148,19 @@ class NumDeletions(BaseNumCorrections):
         return detail[NUM_DELETIONS]
 
 
-# DISCLAIMER:
-# This metric is not well suited for the AssemblyAI pipeline due to interim result update granularity.
-# Most APIs provide word-level interim updates, whereas AssemblyAI tends to make frequent sub-word level updates.
-
-
 @MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_SUBS
+    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_SUBSTITUTIONS
 )
 class NumSubstitutions(BaseNumCorrections):
     """Metric Calculation"""
 
     @classmethod
     def metric_name(cls):
-        return NUM_SUBS
+        return NUM_SUBSTITUTIONS
 
     @classmethod
     def metric_components(cls) -> MetricComponents:
-        return [NUM_SUBS]
+        return [NUM_SUBSTITUTIONS]
 
     def compute_components(
         self, reference: Transcript, hypothesis: Transcript, **kwargs
@@ -176,21 +171,21 @@ class NumSubstitutions(BaseNumCorrections):
 
         if num_corrections is None:
             return {
-                NUM_SUBS: None,
+                NUM_SUBSTITUTIONS: None,
             }
 
-        detail = {NUM_SUBS: num_corrections}
+        detail = {NUM_SUBSTITUTIONS: num_corrections}
 
         return detail
 
     def compute_metric(self, detail: Details | None) -> float:
-        if detail[NUM_SUBS] is None:
+        if detail[NUM_SUBSTITUTIONS] is None:
             return None
-        return detail[NUM_SUBS]
+        return detail[NUM_SUBSTITUTIONS]
 
 
 @MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_INS
+    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_INSERTIONS
 )
 class NumInsertions(BaseNumCorrections):
     """Metric Calculation"""
