@@ -84,7 +84,7 @@ class FireworksApi:
             with lock:
                 segments_hypot.update(updated_segments)
                 # clear_output(wait=True)
-                logger.info(
+                logger.debug(
                     "\n"
                     + "Transcription: "
                     + "\n".join(f" - {k}: {v}" for k, v in segments_hypot.items())

@@ -123,7 +123,7 @@ class DeepgramApi:
                             + ""
                             + msg["channel"]["alternatives"][0]["transcript"]
                         )
-                        logger.info(
+                        logger.debug(
                             "\n"
                             + "Transcription: "
                             + transcript

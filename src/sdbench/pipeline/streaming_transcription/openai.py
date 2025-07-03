@@ -126,7 +126,7 @@ class OpenAIApi:
                     commit_event = {"type": "input_audio_buffer.commit"}
                     await ws.send(json.dumps(commit_event))
                     audio_finished = True
-                    logger.info("Manually sent input_audio_buffer.commit event.")
+                    logger.debug("Manually sent input_audio_buffer.commit event.")
             except Exception as e:
                 logger.error("Error sending audio: %s", e)
 
@@ -153,7 +153,7 @@ class OpenAIApi:
                             logger.debug("Transcription delta: %s", delta)
                             final_transcription += delta
                             confirmed_interim_transcripts.append(final_transcription)
-                            logger.info("\n" + "Transcription: " + final_transcription)
+                            logger.debug("\n" + "Transcription: " + final_transcription)
                         elif (
                             event_type
                             == "conversation.item.input_audio_transcription.completed"

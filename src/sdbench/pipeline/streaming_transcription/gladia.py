@@ -102,7 +102,7 @@ class GladiaApi:
                     model_timestamps_confirmed.append(
                         content["data"]["utterance"]["words"]
                     )
-                    logger.info(
+                    logger.debug(
                         "\n"
                         + "Transcription: "
                         + content["data"]["utterance"]["text"].strip()
