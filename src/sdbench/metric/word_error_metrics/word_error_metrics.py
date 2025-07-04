@@ -15,6 +15,7 @@ from ..metric import MetricOptions
 from ..registry import MetricRegistry
 from .text_normalizer import EnglishTextNormalizer
 
+
 logger = get_logger(__name__)
 
 
@@ -27,9 +28,7 @@ class AlignmentMetrics(BaseModel):
     substitutions: int = Field(..., description="Number of substitutions")
     deletions: int = Field(..., description="Number of deletions")
     insertions: int = Field(..., description="Number of insertions")
-    ops: list[list[jiwer.AlignmentChunk]] = Field(
-        ..., description="Alignment operations"
-    )
+    ops: list[list[jiwer.AlignmentChunk]] = Field(..., description="Alignment operations")
     truth: list[list[str]] = Field(..., description="Reference words")
     hypothesis: list[list[str]] = Field(..., description="Hypothesis words")
 
@@ -118,9 +117,7 @@ class WordDiarizationErrorRate(BaseWordErrorMetric):
             "num_correct_asr_incorrect_speaker",  # Cis is the number of Correct ASR words with Incorrect Speaker tokens
         ]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> dict[str, int]:
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> dict[str, int]:
         """Compute WDER between reference and hypothesis.
 
         Args:
@@ -154,9 +151,7 @@ class WordDiarizationErrorRate(BaseWordErrorMetric):
                 continue
             # Get all aligned word pairs at once
             ref_indices = range(alignment.ref_start_idx, alignment.ref_end_idx)
-            hyp_indices = range(
-                alignment.hyp_start_idx, alignment.hyp_start_idx + len(ref_indices)
-            )
+            hyp_indices = range(alignment.hyp_start_idx, alignment.hyp_start_idx + len(ref_indices))
             matching_pairs.extend(zip(ref_indices, hyp_indices))
 
         # Convert to numpy arrays for faster operations
@@ -174,10 +169,7 @@ class WordDiarizationErrorRate(BaseWordErrorMetric):
 
         # Find optimal speaker mapping using Hungarian algorithm
         row_ind, col_ind = optimize.linear_sum_assignment(cost_matrix, maximize=True)
-        speaker_mapping = {
-            unique_ref_speakers[i]: unique_hyp_speakers[j]
-            for i, j in zip(row_ind, col_ind)
-        }
+        speaker_mapping = {unique_ref_speakers[i]: unique_hyp_speakers[j] for i, j in zip(row_ind, col_ind)}
         logger.debug(f"Speaker mapping: {speaker_mapping}")
 
         # Calculate final statistics
@@ -203,14 +195,10 @@ class WordDiarizationErrorRate(BaseWordErrorMetric):
 
                 if _type == "equal":
                     correct_assignments += 1
-                    num_correct_asr_incorrect_speaker += (
-                        1 if not is_correct_speaker else 0
-                    )
+                    num_correct_asr_incorrect_speaker += 1 if not is_correct_speaker else 0
                 elif _type == "substitute":
                     num_substitutions_asr += 1
-                    num_substitutions_asr_incorrect_speaker += (
-                        1 if not is_correct_speaker else 0
-                    )
+                    num_substitutions_asr_incorrect_speaker += 1 if not is_correct_speaker else 0
                 else:
                     raise ValueError(f"Unknown alignment type: {_type}")
 
@@ -261,18 +249,14 @@ class WordErrorRate(BaseWordErrorMetric):
             "num_words",  # Total number of words in reference
         ]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> dict[str, int]:
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> dict[str, int]:
         """Compute WER between reference and hypothesis.
 
         Args:
             reference: Reference transcript
             hypothesis: Hypothesis transcript
         """
-        alignments, (ref_words, hyp_words), (_, _) = self._get_word_error_metrics(
-            reference, hypothesis
-        )
+        alignments, (ref_words, hyp_words), (_, _) = self._get_word_error_metrics(reference, hypothesis)
 
         # Calculate statistics
         num_substitutions = 0

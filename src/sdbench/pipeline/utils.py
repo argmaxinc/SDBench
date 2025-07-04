@@ -10,6 +10,7 @@ from typing import Tuple
 
 from argmaxtools.utils import _maybe_git_clone, get_logger
 
+
 logger = get_logger(__name__)
 
 
@@ -69,14 +70,12 @@ def clone_and_build_swift_cli(
         logger.error(f"Build failed with return code {e.returncode}")
         logger.error(f"Build stdout:\n{e.stdout}")
         logger.error(f"Build stderr:\n{e.stderr}")
-        raise CLIError(
-            f"Failed to build CLI: Exit code {e.returncode}\nStdout: {e.stdout}\nStderr: {e.stderr}"
-        )
+        raise CLIError(f"Failed to build CLI: Exit code {e.returncode}\nStdout: {e.stdout}\nStderr: {e.stderr}")
 
 
 def _init_submodules(repo_dir: str) -> None:
     """Initialize and update git submodules."""
-    logger.info(f"Initializing git submodules")
+    logger.info("Initializing git submodules")
     subprocess.run(["git", "submodule", "init"], cwd=repo_dir)
     subprocess.run(["git", "submodule", "update", "--remote", "--merge"], cwd=repo_dir)
 

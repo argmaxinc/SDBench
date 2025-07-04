@@ -1,7 +1,6 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-from enum import Enum
 
 import numpy as np
 from pydantic import Field

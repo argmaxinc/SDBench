@@ -1,10 +1,8 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-import os
 from multiprocessing import Pool
-from pathlib import Path
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import tqdm
 import wandb
@@ -29,6 +27,7 @@ from .data_models import (
 )
 from .utils import change_directory, get_global_results
 from .wandb_logger import DiarizationWandbLogger, TranscriptionWandbLogger
+
 
 logger = get_logger(__name__)
 
@@ -77,9 +76,7 @@ class BenchmarkRunner:
         Wrapper function to unpack arguments correctly
         """
         sample_and_id, pipeline, dataset_name, metrics_dict, dataset_length = args
-        return self._process_single_sample(
-            sample_and_id, pipeline, dataset_name, metrics_dict, dataset_length
-        )
+        return self._process_single_sample(sample_and_id, pipeline, dataset_name, metrics_dict, dataset_length)
 
     def _process_single_sample(
         self,
@@ -134,11 +131,7 @@ class BenchmarkRunner:
             # The metric returns a dictionary that is also stored in the metric object as a state to
             # compute the global result
             # We copy to avoid any side effects that may happen while interacting with dictionary for reporting
-            reference = (
-                sample.annotation
-                if pipeline.pipeline_type == PipelineType.DIARIZATION
-                else sample.transcript
-            )
+            reference = sample.annotation if pipeline.pipeline_type == PipelineType.DIARIZATION else sample.transcript
             _metric_output = metric(
                 hypothesis=output.prediction,
                 reference=reference,
@@ -228,8 +221,7 @@ class BenchmarkRunner:
         dataset_length = len(dataset)
 
         args_list = [
-            ((i, sample), pipeline, dataset_name, metrics_dict, dataset_length)
-            for i, sample in enumerate(dataset)
+            ((i, sample), pipeline, dataset_name, metrics_dict, dataset_length) for i, sample in enumerate(dataset)
         ]
 
         # NOTE: Currently, pipelines that utilize the MPS backend are not supported in parallel mode.
@@ -293,9 +285,7 @@ class BenchmarkRunner:
         list[TaskResult],
         list[GlobalResult],
     ]:
-        per_sample_results: list[
-            DiarizationSampleResult | TranscriptionSampleResult
-        ] = []
+        per_sample_results: list[DiarizationSampleResult | TranscriptionSampleResult] = []
         per_task_results: list[TaskResult] = []
 
         metrics_dict = self._get_metrics(pipeline)
@@ -325,9 +315,7 @@ class BenchmarkRunner:
         """
         Run the benchmark on the given datasets.
         """
-        per_sample_results: list[
-            DiarizationSampleResult | TranscriptionSampleResult
-        ] = []
+        per_sample_results: list[DiarizationSampleResult | TranscriptionSampleResult] = []
         per_task_results: list[TaskResult] = []
         per_dataset_global_results: list[GlobalResult] = []
 
@@ -335,24 +323,25 @@ class BenchmarkRunner:
         wandb_config = self.config.get_wandb_config_to_log()
         for pipeline in self.pipelines:
             # Get logger
-            wandb_logger = self.logger_map[pipeline.pipeline_type](
-                output_dir=pipeline.config.out_dir
-            )
+            wandb_logger = self.logger_map[pipeline.pipeline_type](output_dir=pipeline.config.out_dir)
             # Add pipeline info to wandb config
             wandb_config["pipeline_name"] = pipeline.__class__.__name__
             wandb_config["pipeline_config"] = pipeline.config.model_dump()
 
-            with change_directory(pipeline.config.out_dir), wandb.init(
-                project=self.config.wandb_config.project_name,
-                name=self.config.wandb_config.run_name,
-                mode=self.config.wandb_config.wandb_mode,
-                tags=(
-                    self.config.wandb_config.tags + [pipeline.__class__.__name__]
-                    if self.config.wandb_config.tags
-                    else [pipeline.__class__.__name__]
-                ),
-                config=wandb_config,
-            ) as run:
+            with (
+                change_directory(pipeline.config.out_dir),
+                wandb.init(
+                    project=self.config.wandb_config.project_name,
+                    name=self.config.wandb_config.run_name,
+                    mode=self.config.wandb_config.wandb_mode,
+                    tags=(
+                        self.config.wandb_config.tags + [pipeline.__class__.__name__]
+                        if self.config.wandb_config.tags
+                        else [pipeline.__class__.__name__]
+                    ),
+                    config=wandb_config,
+                ) as run,
+            ):
                 for dataset_name, dataset_config in self.config.datasets.items():
                     # TODO: This logic is currently hard coded. Fix this
                     if dataset_config.dataset_id.split("/")[1].split("_")[0] == "timit":
@@ -360,14 +349,10 @@ class BenchmarkRunner:
                     else:
                         ds = DiarizationDataset.from_config(dataset_config)
 
-                    logger.info(
-                        f"Evaluating {pipeline.__class__.__name__} on {dataset_name}..."
-                    )
+                    logger.info(f"Evaluating {pipeline.__class__.__name__} on {dataset_name}...")
 
                     if pipeline.config.num_worker_processes:
-                        logger.info(
-                            f"Executing in parallel mode with {pipeline.config.num_worker_processes} workers"
-                        )
+                        logger.info(f"Executing in parallel mode with {pipeline.config.num_worker_processes} workers")
                         results = self._run_pipeline_on_dataset_parallel(
                             pipeline,
                             ds,
@@ -375,9 +360,7 @@ class BenchmarkRunner:
                         )
                     else:
                         logger.info("Executing in sequential mode")
-                        results = self._run_pipeline_on_dataset(
-                            pipeline, ds, dataset_name
-                        )
+                        results = self._run_pipeline_on_dataset(pipeline, ds, dataset_name)
 
                     sample_results, task_results, global_results = results
                     wandb_logger(global_results, task_results, sample_results)

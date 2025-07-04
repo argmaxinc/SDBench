@@ -74,18 +74,14 @@ class OracleSegmenterInference(Inference):
         waveform, sample_rate = self.model.audio(file)
         duration = Audio(mono="downmix").get_duration(file)
         if self.window == "sliding":
-            return self.slide(
-                hook=hook, reference=file["annotation"], duration=duration
-            )
+            return self.slide(hook=hook, reference=file["annotation"], duration=duration)
 
         outputs: Union[np.ndarray, Tuple[np.ndarray]] = self.infer(waveform[None])
 
         def __first_sample(outputs: np.ndarray, **kwargs) -> np.ndarray:
             return outputs[0]
 
-        return map_with_specifications(
-            self.model.specifications, __first_sample, outputs
-        )
+        return map_with_specifications(self.model.specifications, __first_sample, outputs)
 
     def slide(
         self,
@@ -124,9 +120,7 @@ class OracleSegmenterInference(Inference):
 
             return result
 
-        def get_frames(
-            receptive_field, specifications: Optional[Specifications] = None
-        ) -> SlidingWindow:
+        def get_frames(receptive_field, specifications: Optional[Specifications] = None) -> SlidingWindow:
             if specifications.resolution == Resolution.CHUNK:
                 return SlidingWindow(start=0.0, duration=self.duration, step=self.step)
             return receptive_field
@@ -153,9 +147,7 @@ class OracleSegmenterInference(Inference):
 
             if num_speakers < actual_num_speakers:
                 # Keep only the most talkative speakers
-                most_talkative_index = np.argsort(np.sum(chunk_segmentation, axis=0))[
-                    ::-1
-                ]
+                most_talkative_index = np.argsort(np.sum(chunk_segmentation, axis=0))[::-1]
                 chunk_segmentation = chunk_segmentation[:, most_talkative_index]
                 # Randomly Assign Least Talkative Speakers if Active Speakers > 3
                 active_speaker_count = (chunk_segmentation.sum(axis=0) > 0).sum()

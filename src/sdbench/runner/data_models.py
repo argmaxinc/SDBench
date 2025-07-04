@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 from ..pipeline.base import PredictionProtocol
 from ..pipeline_prediction import DiarizationAnnotation, StreamingTranscript, Transcript
 
+
 Prediction = TypeVar("Prediction", bound=PredictionProtocol)
 
 
@@ -108,6 +109,4 @@ class BenchmarkResult(BaseModel):
         ..., description="The results of the samples"
     )
     task_results: list[TaskResult] = Field(..., description="The results of the tasks")
-    global_results: list[GlobalResult] = Field(
-        ..., description="The results of the global metrics"
-    )
+    global_results: list[GlobalResult] = Field(..., description="The results of the global metrics")

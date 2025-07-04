@@ -42,17 +42,28 @@ If you already have access please update the `speakerkit.yaml` and follow the re
 <details>
 <summary> Click to expand </summary>
 
-In order to get started, first make sure you have `poetry` installed. The [official documentation](https://python-poetry.org/docs/#installing-with-the-official-installer) has instructions for how to install the `poetry` CLI.
+In order to get started, first make sure you have `uv` installed. The [official documentation](https://docs.astral.sh/uv/getting-started/installation/) has instructions for how to install the `uv` CLI.
 
-If you already have `poetry` installed you can run `make setup` to install the dependencies and set up the environment.
-If you use `conda` or `venv` directly to manage your python environment you can install poetry with `pip intstall poetry` and then run `make setup` to install the dependencies.
+If you already have `uv` installed you can run `make setup` to install the dependencies and set up the environment.
+If you use `conda` or `venv` directly to manage your python environment you can install uv with `pip install uv` and then run `make setup` to install the dependencies.
 
 Example with `conda`:
 ```bash
 conda create -n <your-env-name> python=3.11
 conda activate <your-env-name>
-pip install poetry
+pip install uv
 make setup
+```
+
+Alternatively, you can use `uv` directly to manage the environment:
+```bash
+# Install dependencies and create virtual environment
+uv sync
+
+# Activate the environment (if needed)
+source .venv/bin/activate  # On macOS/Linux
+# or
+.venv\Scripts\activate     # On Windows
 ```
 </details>
 
@@ -117,12 +128,12 @@ The benchmark suite supports different types of pipelines (`Diarization`, `ASR`,
 
 ### Downloading Datasets
 
-If you want to reproduce the exact dataset downloads and processing, you can use our dataset downloading scripts. First, make sure you have the required dependencies installed as mentioned in the `Getting Started` section and also install the `dataset` dependencies doing `poetry install --with dataset`
+If you want to reproduce the exact dataset downloads and processing, you can use our dataset downloading scripts. First, make sure you have the required dependencies installed as mentioned in the `Getting Started` section and also install the `dataset` dependencies doing `uv sync --group dataset`
 
 After installing the dependencies, you can run the dataset downloading script at `common/download_dataset.py`. For example, to download the ICSI meetings dataset, you can run:
 
 ```bash
-poetry run python common/download_dataset.py --dataset icsi-meetings --hf-repo-owner <your-huggingface-username>
+uv run python common/download_dataset.py --dataset icsi-meetings --hf-repo-owner <your-huggingface-username>
 ```
 
 This will download the dataset and store locally at `raw_datasets/icsi-meetings` directory and upload it to the designated HuggingFace organization at `<your-huggingface-username>/icsi-meetings`. In case you only want to download and not push to HuggingFace, you can use the `--generate-only` flag.
@@ -343,7 +354,7 @@ You can easily customize your evaluation runs using Hydra's override syntax. Her
 1. **Selecting Specific Pipelines**
 ```bash
 # Run evaluation with only MyPipeline
-poetry run python evaluation.py pipeline_configs=my_pipeline
+uv run python evaluation.py pipeline_configs=my_pipeline
 ```
 
 2. **Modifying Pipeline Parameters**
@@ -352,7 +363,7 @@ You can override specific configuration parameters in two ways:
 a. **Override by Value**:
 ```bash
 # Change the speaker segmenter stride
-poetry run python evaluation.py \
+uv run python evaluation.py \
     pipeline_configs=my_pipeline \
     pipeline_configs.MyPipeline.config.diarization_config.speaker_segmenter_config.variant_name=stride_2
 ```
@@ -360,13 +371,13 @@ poetry run python evaluation.py \
 b. **Override by Config**:
 ```bash
 # Use a predefined speaker segmenter configuration
-poetry run python evaluation.py \
+uv run python evaluation.py \
     pipeline_configs=my_pipeline \
     pipeline_configs/MyPipeline/config/diarization_config/speaker_segmenter_config=stride_2
 ```
 
 Note: Use `-h` flag with any command to see the resulting configuration:
 ```bash
-poetry run python evaluation.py pipeline_configs=my_pipeline -h
+uv run python evaluation.py pipeline_configs=my_pipeline -h
 ```
 </details>

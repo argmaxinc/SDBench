@@ -9,9 +9,7 @@ import argparse
 import diarizationlm
 
 
-def calculate_wder(
-    hypothesis_text, hypothesis_speaker, reference_text, reference_speaker
-):
+def calculate_wder(hypothesis_text, hypothesis_speaker, reference_text, reference_speaker):
     # Prepare the input in the format expected by diarizationlm
     json_dict = {
         "utterances": [
@@ -34,18 +32,10 @@ def calculate_wder(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Calculate WDER using diarizationlm")
-    parser.add_argument(
-        "--hypothesis-text", required=True, help="The hypothesized transcription text"
-    )
-    parser.add_argument(
-        "--hypothesis-speaker", required=True, help="The hypothesized speaker labels"
-    )
-    parser.add_argument(
-        "--reference-text", required=True, help="The reference transcription text"
-    )
-    parser.add_argument(
-        "--reference-speaker", required=True, help="The reference speaker labels"
-    )
+    parser.add_argument("--hypothesis-text", required=True, help="The hypothesized transcription text")
+    parser.add_argument("--hypothesis-speaker", required=True, help="The hypothesized speaker labels")
+    parser.add_argument("--reference-text", required=True, help="The reference transcription text")
+    parser.add_argument("--reference-speaker", required=True, help="The reference speaker labels")
 
     args = parser.parse_args()
 

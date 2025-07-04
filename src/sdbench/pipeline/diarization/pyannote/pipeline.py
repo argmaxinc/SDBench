@@ -16,6 +16,7 @@ from ...base import Pipeline, PipelineType, register_pipeline
 from ..common import DiarizationOutput, DiarizationPipelineConfig
 from .oracle_diarizer import OracleSpeakerDiarization
 
+
 __all__ = ["PyAnnotePipeline", "PyAnnotePipelineConfig"]
 
 
@@ -45,17 +46,13 @@ class PyAnnotePipeline(Pipeline):
         pipeline = PyannotePipeline.from_pretrained("pyannote/speaker-diarization-3.1")
 
         if self.config.use_oracle_clustering or self.config.use_oracle_segmentation:
-            clustering = (
-                "OracleClustering"
-                if self.config.use_oracle_clustering
-                else "AgglomerativeClustering"
-            )
+            clustering = "OracleClustering" if self.config.use_oracle_clustering else "AgglomerativeClustering"
             pipeline = self._build_oracle_pipeline(pipeline, clustering)
 
         pipeline.to(torch.device(self.config.device))
 
         def call_pipeline(
-            inputs: dict[str, torch.FloatTensor | int]
+            inputs: dict[str, torch.FloatTensor | int],
         ) -> DiarizationAnnotation:
             with torch.autocast(
                 device_type=self.config.device,
@@ -105,9 +102,7 @@ class PyAnnotePipeline(Pipeline):
         _pipeline.instantiate(params)
         return _pipeline
 
-    def parse_input(
-        self, input_sample: DiarizationSample
-    ) -> dict[str, torch.FloatTensor | int]:
+    def parse_input(self, input_sample: DiarizationSample) -> dict[str, torch.FloatTensor | int]:
         waveform = torch.from_numpy(input_sample.waveform).float().unsqueeze(0)
         waveform = waveform.to(self.config.device)
         parsed_input = dict(

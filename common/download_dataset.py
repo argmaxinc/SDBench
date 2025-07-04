@@ -30,6 +30,7 @@ from scipy.io import wavfile
 from textgrid import TextGrid
 from tqdm import tqdm
 
+
 logger = get_logger(__name__)
 
 # Suppress FutureWarning
@@ -83,9 +84,7 @@ DATASETS_URLS = {
 }
 
 
-def retry(
-    max_retries: int = 5, backoff_factor: int = 2, exceptions: tuple = (Exception,)
-):
+def retry(max_retries: int = 5, backoff_factor: int = 2, exceptions: tuple = (Exception,)):
     """
     A decorator to retry a function upon encountering specified exceptions.
 
@@ -105,9 +104,7 @@ def retry(
                 except exceptions as e:
                     retries += 1
                     if retries > max_retries:
-                        logger.error(
-                            f"Function {func.__name__} failed after {max_retries} retries."
-                        )
+                        logger.error(f"Function {func.__name__} failed after {max_retries} retries.")
                         # Re-raise the exception after exhausting retries
                         raise e
                     wait_time = backoff_factor**retries
@@ -191,19 +188,13 @@ class AwsProfileInfo(BaseModel):
 
     def write_credentials(self) -> None:
         if self.exists():
-            logger.info(
-                f"AWS profile '{self.profile}' already exists, updating access and secret key..."
-            )
+            logger.info(f"AWS profile '{self.profile}' already exists, updating access and secret key...")
             lines = self.credentials_path.read_text().splitlines()
             for line in lines:
                 if line.startswith(f"[{self.profile}]"):
                     lines[lines.index(line)] = f"[{self.profile}]\n"
-                    lines[
-                        lines.index(line) + 1
-                    ] = f"aws_access_key_id = {self.access_id}\n"
-                    lines[
-                        lines.index(line) + 2
-                    ] = f"aws_secret_access_key = {self.access_key}\n"
+                    lines[lines.index(line) + 1] = f"aws_access_key_id = {self.access_id}\n"
+                    lines[lines.index(line) + 2] = f"aws_secret_access_key = {self.access_key}\n"
                     logger.info(f"AWS profile '{self.profile}' updated successfully.")
 
             # Merge all lines into a single file again
@@ -219,9 +210,7 @@ class AwsProfileInfo(BaseModel):
 
     def write_config(self) -> None:
         if self.exists():
-            logger.info(
-                f"AWS profile '{self.profile}' already exists, skipping config file creation..."
-            )
+            logger.info(f"AWS profile '{self.profile}' already exists, skipping config file creation...")
             return
 
         logger.info(f"Creating AWS config file for profile '{self.profile}'...")
@@ -240,9 +229,7 @@ class SpeakerDiarizationData(BaseModel):
     split: str = Field(..., description="The split of the dataset")
     split: str = Field(..., description="The split of the dataset")
     audio_paths: list[str] = Field(..., description="The path to the audio files")
-    annotation_paths: list[str] = Field(
-        ..., description="The path to the annotation files (.rttm)"
-    )
+    annotation_paths: list[str] = Field(..., description="The path to the annotation files (.rttm)")
     uem_paths: list[str] | None = Field(
         None,
         description="The path to the UEM files",
@@ -267,15 +254,11 @@ class SpeakerDiarizationData(BaseModel):
     @model_validator(mode="after")
     def check_audio_annotation_match(self) -> "SpeakerDiarizationData":
         if len(self.audio_paths) != len(self.annotation_paths):
-            raise ValueError(
-                "The number of audio files and annotation files must be the same"
-            )
+            raise ValueError("The number of audio files and annotation files must be the same")
 
         for audio_path, rttm_path in zip(self.audio_paths, self.annotation_paths):
             if Path(audio_path).stem != Path(rttm_path).stem:
-                raise ValueError(
-                    f"Audio file {audio_path} and RTTM file {rttm_path} do not match"
-                )
+                raise ValueError(f"Audio file {audio_path} and RTTM file {rttm_path} do not match")
 
         return self
 
@@ -285,9 +268,7 @@ class SpeakerDiarizationData(BaseModel):
             return self
 
         if len(self.uem_paths) != len(self.annotation_paths):
-            raise ValueError(
-                "The number of UEM files and annotation files must be the same"
-            )
+            raise ValueError("The number of UEM files and annotation files must be the same")
 
         return self
 
@@ -297,9 +278,7 @@ class SpeakerDiarizationData(BaseModel):
             return self
 
         if len(self.transcript) != len(self.audio_paths):
-            raise ValueError(
-                "The number of transcripts and audio files must be the same"
-            )
+            raise ValueError("The number of transcripts and audio files must be the same")
 
         return self
 
@@ -334,9 +313,7 @@ class SpeakerDiarizationData(BaseModel):
                 f"{len(self.word_speakers)=} and {len(self.word_timestamps)=}"
             )
 
-        for word_speakers, word_timestamps in zip(
-            self.word_speakers, self.word_timestamps
-        ):
+        for word_speakers, word_timestamps in zip(self.word_speakers, self.word_timestamps):
             if len(word_speakers) != len(word_timestamps):
                 raise ValueError(
                     "The number of word speakers and word timestamps must be the same "
@@ -376,15 +353,11 @@ class SpeakerDiarizationDataset(ABC):
         """
         pass
 
-    def process_rttm_file(
-        self, rttm_file: str
-    ) -> tuple[list[float], list[float], list[str | int]]:
+    def process_rttm_file(self, rttm_file: str) -> tuple[list[float], list[float], list[str | int]]:
         logger.info(f"Processing RTTM file {rttm_file}")
         rttm_data: dict[str, Annotation] = load_rttm(rttm_file)
         if len(rttm_data) > 1 or len(rttm_data) == 0:
-            raise ValueError(
-                f"RTTM file {rttm_file} has more than one or no annotations"
-            )
+            raise ValueError(f"RTTM file {rttm_file} has more than one or no annotations")
         annotation_uri = list(rttm_data.keys())[0]
         annotation: Annotation = rttm_data[annotation_uri]
         timestamps_start = []
@@ -401,9 +374,7 @@ class SpeakerDiarizationDataset(ABC):
         uem_data: dict[str, Timeline] = load_uem(uem_file)
         uem_timestamps: list[tuple[float, float]] = []
         if len(uem_data) > 1 or len(uem_data) == 0:
-            raise ValueError(
-                f"UMEM file {uem_file} has more than one or no annotations"
-            )
+            raise ValueError(f"UMEM file {uem_file} has more than one or no annotations")
         uem_uri = list(uem_data.keys())[0]
         uem: Timeline = uem_data[uem_uri]
         for segment in uem:
@@ -411,17 +382,13 @@ class SpeakerDiarizationDataset(ABC):
 
         return uem_timestamps
 
-    def build_dataset(
-        self, data: dict[str, SpeakerDiarizationData]
-    ) -> datasets.DatasetDict:
+    def build_dataset(self, data: dict[str, SpeakerDiarizationData]) -> datasets.DatasetDict:
         dataset_dict = {}
         for split, split_data in data.items():
             audio_paths = split_data.audio_paths
             timestamps_start, timestamps_end, speakers = [], [], []
             for rttm_file in split_data.annotation_paths:
-                _timestamps_start, _timestamps_end, _speakers = self.process_rttm_file(
-                    rttm_file
-                )
+                _timestamps_start, _timestamps_end, _speakers = self.process_rttm_file(rttm_file)
                 timestamps_start.append(_timestamps_start)
                 timestamps_end.append(_timestamps_end)
                 speakers.append(_speakers)
@@ -436,9 +403,7 @@ class SpeakerDiarizationDataset(ABC):
             )
 
             if split_data.uem_paths is not None:
-                uem_timestamps = [
-                    self.process_uem_file(uem_path) for uem_path in split_data.uem_paths
-                ]
+                uem_timestamps = [self.process_uem_file(uem_path) for uem_path in split_data.uem_paths]
                 dataset_entry["uem_timestamps"] = uem_timestamps
 
             if split_data.transcript is not None:
@@ -510,9 +475,7 @@ class Earnings21Dataset(SpeakerDiarizationDataset):
     def create_dataset(self) -> dict[str, SpeakerDiarizationData]:
         rttm_dir = Path("speech-datasets", "earnings21", "rttms")
         audio_dir = Path("speech-datasets", "earnings21", "media")
-        transcript_dir = Path(
-            "speech-datasets", "earnings21", "transcripts", "nlp_references"
-        )
+        transcript_dir = Path("speech-datasets", "earnings21", "transcripts", "nlp_references")
 
         rttm_files = sorted(list(rttm_dir.glob("*.rttm")))
         audio_files = sorted(list(audio_dir.glob("*.mp3")))
@@ -522,16 +485,12 @@ class Earnings21Dataset(SpeakerDiarizationDataset):
         word_speakers: list[list[str]] = []
 
         # Convert mp3 and populate transcripts and word_speakers
-        for audio_file, audio_file_wav in tqdm(
-            zip(audio_files, audio_files_wav), total=len(audio_files)
-        ):
+        for audio_file, audio_file_wav in tqdm(zip(audio_files, audio_files_wav), total=len(audio_files)):
             if audio_file_wav.exists():
                 tqdm.write(f"Audio file {audio_file_wav} already exists, skipping...")
             else:
                 tqdm.write(f"Converting {audio_file} to {audio_file_wav}")
-                AudioSegment.from_mp3(str(audio_file)).export(
-                    str(audio_file_wav), format="wav"
-                )
+                AudioSegment.from_mp3(str(audio_file)).export(str(audio_file_wav), format="wav")
 
             nlp_file_path = transcript_dir / audio_file.with_suffix(".nlp").name
             words, speakers = self._parse_nlp_references(nlp_file_path)
@@ -613,9 +572,7 @@ class MSDWildDataset(SpeakerDiarizationDataset):
             for rttm_file in rttm_files:
                 audio_file = wav_dir / f"{rttm_file.stem}.wav"
                 if not audio_file.exists():
-                    raise ValueError(
-                        f"Audio file {audio_file} does not exist for RTTM file {rttm_file}"
-                    )
+                    raise ValueError(f"Audio file {audio_file} does not exist for RTTM file {rttm_file}")
                 audio_files.append(str(audio_file))
 
             data[split_dir.name] = SpeakerDiarizationData(
@@ -650,9 +607,7 @@ class ICSIMeetingsDataset(SpeakerDiarizationDataset):
         with open(shell_script_filename, "w") as f:
             f.write(response.text)
 
-        logger.info(
-            f"Executing shell script from {self.output_dir / shell_script_filename}"
-        )
+        logger.info(f"Executing shell script from {self.output_dir / shell_script_filename}")
         subprocess.run(["chmod", "+x", shell_script_filename])
         subprocess.run([f"./{shell_script_filename}"])
 
@@ -662,14 +617,10 @@ class ICSIMeetingsDataset(SpeakerDiarizationDataset):
             return
 
         url_to_annotations = DATASETS_URLS[self.dataset_name]["annotations_url"]
-        logger.info(
-            f"Downloading annotations from {url_to_annotations} to {self.output_dir}"
-        )
+        logger.info(f"Downloading annotations from {url_to_annotations} to {self.output_dir}")
         download_file(url_to_annotations, "annotations.zip")
 
-        logger.info(
-            f"Extracting annotations from {self.output_dir / 'annotations.zip'} to {self.output_dir}"
-        )
+        logger.info(f"Extracting annotations from {self.output_dir / 'annotations.zip'} to {self.output_dir}")
         with zipfile.ZipFile("annotations.zip", "r") as zip_ref:
             zip_ref.extractall()
 
@@ -683,9 +634,7 @@ class ICSIMeetingsDataset(SpeakerDiarizationDataset):
         segment_id = segment.get("nite:id")
         segment_type = segment.get("type")
         if segment_type == "supersegment":
-            logger.info(
-                f"{audio_id} -> Supersegment found at {segment_id}, trying to use subsegmenets"
-            )
+            logger.info(f"{audio_id} -> Supersegment found at {segment_id}, trying to use subsegmenets")
             super_timestamp_start = timestamp_start
             super_timestamp_end = timestamp_end
             super_speaker = speaker
@@ -708,21 +657,9 @@ class ICSIMeetingsDataset(SpeakerDiarizationDataset):
                     )
                     subsegmenets_all_correct = False
                     break
-            timestamp_start = (
-                [super_timestamp_start]
-                if not subsegmenets_all_correct
-                else subsegments_timestamp_start
-            )
-            timestamp_end = (
-                [super_timestamp_end]
-                if not subsegmenets_all_correct
-                else subsegments_timestamp_end
-            )
-            speaker = (
-                [super_speaker]
-                if not subsegmenets_all_correct
-                else subsegments_speakers
-            )
+            timestamp_start = [super_timestamp_start] if not subsegmenets_all_correct else subsegments_timestamp_start
+            timestamp_end = [super_timestamp_end] if not subsegmenets_all_correct else subsegments_timestamp_end
+            speaker = [super_speaker] if not subsegmenets_all_correct else subsegments_speakers
         else:
             timestamp_start = [timestamp_start]
             timestamp_end = [timestamp_end]
@@ -746,33 +683,21 @@ class ICSIMeetingsDataset(SpeakerDiarizationDataset):
             unit="annotation",
         ):
             audio_id = xml_file.stem.split(".")[0]
-            annotation = (
-                Annotation(uri=audio_id)
-                if audio_id not in annotation_dict
-                else annotation_dict[audio_id]
-            )
+            annotation = Annotation(uri=audio_id) if audio_id not in annotation_dict else annotation_dict[audio_id]
 
             with open(str(xml_file), "r") as f:
                 soup = BeautifulSoup(f, "xml")
 
             # Filter out subsegments as we'll handle them using their parent segmenet i.e. type == "supersegment"
-            all_segments = [
-                s for s in soup.find_all("segment") if s.get("type") != "subsegment"
-            ]
+            all_segments = [s for s in soup.find_all("segment") if s.get("type") != "subsegment"]
             for segment in all_segments:
-                timestamps_start, timestamps_end, speakers = self._resolve_subsegments(
-                    segment, audio_id
-                )
+                timestamps_start, timestamps_end, speakers = self._resolve_subsegments(segment, audio_id)
 
-                for timestamp_start, timestamp_end, speaker in zip(
-                    timestamps_start, timestamps_end, speakers
-                ):
+                for timestamp_start, timestamp_end, speaker in zip(timestamps_start, timestamps_end, speakers):
                     logger.info(
                         f"{audio_id} -> Adding segment {timestamp_start} - {timestamp_end} for speaker {speaker}"
                     )
-                    annotation[
-                        Segment(start=float(timestamp_start), end=float(timestamp_end))
-                    ] = speaker
+                    annotation[Segment(start=float(timestamp_start), end=float(timestamp_end))] = speaker
 
             if audio_id not in annotation_dict:
                 annotation_dict[audio_id] = annotation
@@ -797,9 +722,7 @@ class ICSIMeetingsDataset(SpeakerDiarizationDataset):
 
         for rttm_file, wav_id in zip(rttm_files, wav_ids):
             if rttm_file.stem != wav_id:
-                raise ValueError(
-                    f"RTTM file {rttm_file} and WAV file {wav_id} do not match"
-                )
+                raise ValueError(f"RTTM file {rttm_file} and WAV file {wav_id} do not match")
 
         return {
             "test": SpeakerDiarizationData(
@@ -817,9 +740,7 @@ class AliMeetingsDataset(SpeakerDiarizationDataset):
 
     def _download_and_extract(self) -> None:
         url_to_audio_annot = DATASETS_URLS[self.dataset_name]["audio_annot_url"]
-        logger.info(
-            f"Downloading audio and annotations from {url_to_audio_annot} to {self.output_dir}"
-        )
+        logger.info(f"Downloading audio and annotations from {url_to_audio_annot} to {self.output_dir}")
         download_file(url_to_audio_annot, "audio_annot.tar.gz")
         logger.info(
             f"Extracting audio and annotations from {self.output_dir / 'audio_annot.tar.gz'} to {self.output_dir}"
@@ -868,9 +789,7 @@ class AliMeetingsDataset(SpeakerDiarizationDataset):
             audio_id = "_".join([part for part in audio_stem.split("_")[:-1]])
             rttm_id = rttm_file.stem  # e.g. R8001_M8004
             if audio_id != rttm_id:
-                raise ValueError(
-                    f"Audio file {audio_file} and annotation file {rttm_file} do not match"
-                )
+                raise ValueError(f"Audio file {audio_file} and annotation file {rttm_file} do not match")
 
         return {
             "test": SpeakerDiarizationData(
@@ -888,9 +807,7 @@ class AIShell4Dataset(SpeakerDiarizationDataset):
 
     def download(self) -> None:
         hf_repo_id = DATASETS_URLS[self.dataset_name]["hf_repo_id"]
-        logger.info(
-            f"Downloading audio and annotation for {self.dataset_name} dataset to {self.output_dir}"
-        )
+        logger.info(f"Downloading audio and annotation for {self.dataset_name} dataset to {self.output_dir}")
         snapshot_download(
             repo_id=hf_repo_id,
             repo_type="dataset",
@@ -905,15 +822,11 @@ class AIShell4Dataset(SpeakerDiarizationDataset):
         audio_files = sorted(list(audio_dir.glob("*.flac")))
         rttm_files = sorted(list(annot_dir.glob("*.rttm")))
 
-        logger.info(
-            f"Found {len(audio_files)} audio files and {len(rttm_files)} annotation files"
-        )
+        logger.info(f"Found {len(audio_files)} audio files and {len(rttm_files)} annotation files")
         logger.info("Veryfing that audio and annotation files match...")
         for audio_file, rttm_file in zip(audio_files, rttm_files):
             if audio_file.stem != rttm_file.stem:
-                raise ValueError(
-                    f"Audio file {audio_file} and annotation file {rttm_file} do not match"
-                )
+                raise ValueError(f"Audio file {audio_file} and annotation file {rttm_file} do not match")
         logger.info("Audio and annotation files match")
 
         return {
@@ -937,7 +850,7 @@ class AmericanLifeDataset(SpeakerDiarizationDataset):
             self.kaggle_api.authenticate()
         except Exception as e:
             logger.error(
-                f"Failed to authenticate to Kaggle make sure you have a Kaggle API key in your ~/.kaggle/kaggle.json file."
+                "Failed to authenticate to Kaggle make sure you have a Kaggle API key in your ~/.kaggle/kaggle.json file."
             )
             raise e
 
@@ -963,9 +876,7 @@ class AmericanLifeDataset(SpeakerDiarizationDataset):
         annot_dir = Path("kaggle_annotations")
         annot_files = sorted(list(annot_dir.glob("*.json")))
         # Get only the transcripts
-        annot_files = [
-            annot_file for annot_file in annot_files if "transcripts" in annot_file.stem
-        ]
+        annot_files = [annot_file for annot_file in annot_files if "transcripts" in annot_file.stem]
         # Get episode number
         eps_to_download = []
         for annot_file in annot_files:
@@ -992,9 +903,7 @@ class AmericanLifeDataset(SpeakerDiarizationDataset):
 
         kaggle_dataset = DATASETS_URLS[self.dataset_name]["kaggle_dataset_id"]
         logger.info(f"Downloading dataset {kaggle_dataset} to {self.output_dir}")
-        self.kaggle_api.dataset_download_files(
-            kaggle_dataset, path=str(annot_dir), unzip=False
-        )
+        self.kaggle_api.dataset_download_files(kaggle_dataset, path=str(annot_dir), unzip=False)
 
         filename = "this-american-life-podcast-transcriptsalignments.zip"
         with zipfile.ZipFile(filename, "r") as zip_ref:
@@ -1004,9 +913,7 @@ class AmericanLifeDataset(SpeakerDiarizationDataset):
         self._download_annotations()
         self._download_audio()
 
-    def _create_annotation_from_json(
-        self, segments: list[dict], speaker_map: dict[str, str]
-    ) -> Annotation:
+    def _create_annotation_from_json(self, segments: list[dict], speaker_map: dict[str, str]) -> Annotation:
         annot = Annotation()
         for segment in segments:
             speaker_id = speaker_map[segment["speaker"]]
@@ -1017,13 +924,9 @@ class AmericanLifeDataset(SpeakerDiarizationDataset):
         return annot
 
     def _parse_annot_json(self, json_path: str) -> dict[str, Annotation]:
-        speaker_map_file = (
-            Path("kaggle_annotations") / DATASETS_URLS[self.dataset_name]["speaker_map"]
-        )
+        speaker_map_file = Path("kaggle_annotations") / DATASETS_URLS[self.dataset_name]["speaker_map"]
         speaker_map = load_json(speaker_map_file)
-        annotations: dict[str, list[dict]] = load_json(
-            Path("kaggle_annotations") / json_path
-        )
+        annotations: dict[str, list[dict]] = load_json(Path("kaggle_annotations") / json_path)
         parsed_annotations: dict[str, Annotation] = {}
         for episode, segments in annotations.items():
             episode_number = int(episode.split("-")[1])
@@ -1051,9 +954,7 @@ class AmericanLifeDataset(SpeakerDiarizationDataset):
         for split in splits:
             annot_dir = Path(f"{split}_annotations")
             rttm_files = sorted(list(annot_dir.glob("*.rttm")))
-            audio_files = [
-                audio_dir / f"{rttm_file.stem}.mp3" for rttm_file in rttm_files
-            ]
+            audio_files = [audio_dir / f"{rttm_file.stem}.mp3" for rttm_file in rttm_files]
             data[split] = SpeakerDiarizationData(
                 split=split,
                 audio_paths=[str(audio_file) for audio_file in audio_files],
@@ -1095,17 +996,17 @@ class AVAAvdDataset(SpeakerDiarizationDataset):
         video_ids = load_list(str(self.splits_dir / "video.list"))
 
         for i, video in enumerate(video_ids):
-            logger.info(f"Downloading {video}[{i+1}]/[{len(video_ids)}]")
+            logger.info(f"Downloading {video}[{i + 1}]/[{len(video_ids)}]")
             cmd = f"wget -P {str(videos_dir)} https://s3.amazonaws.com/ava-dataset/trainval/{video.strip()}"
             subprocess.call(cmd, shell=True)
 
     # Adapted from https://github.com/showlab/AVA-AVD/blob/main/dataset/scripts/download.py#L13
     def _download_annotations(self) -> None:
         logger.info("Downloading annotations")
-        cmd = f"gdown --id 18kjJJbebBg7e8umI6HoGE4_tI3OWufzA"
+        cmd = "gdown --id 18kjJJbebBg7e8umI6HoGE4_tI3OWufzA"
         subprocess.call(cmd, shell=True)
         logger.info("Extracting annotations")
-        cmd = f"tar -xvf annotations.tar.gz"
+        cmd = "tar -xvf annotations.tar.gz"
         # This will add a `rttms` directory and others (which we don't need)
         subprocess.call(cmd, shell=True)
         os.remove("annotations.tar.gz")
@@ -1124,10 +1025,8 @@ class AVAAvdDataset(SpeakerDiarizationDataset):
 
         for video in self.videos_dir.iterdir():
             video_uid = video.stem
-            logger.info(
-                f"Extracting audio from {video} to {self.temp_audios_dir / f'{video_uid}.wav'}"
-            )
-            cmd = f'ffmpeg -y -i {video} -qscale:a 0 -ac 1 -vn -threads 6 -ar 16000 {self.temp_audios_dir / f"{video_uid}.wav"}'
+            logger.info(f"Extracting audio from {video} to {self.temp_audios_dir / f'{video_uid}.wav'}")
+            cmd = f"ffmpeg -y -i {video} -qscale:a 0 -ac 1 -vn -threads 6 -ar 16000 {self.temp_audios_dir / f'{video_uid}.wav'}"
             subprocess.call(cmd, shell=True)
 
             rttms = self.rttms_dir.glob(f"{video_uid}*.rttm")
@@ -1139,18 +1038,12 @@ class AVAAvdDataset(SpeakerDiarizationDataset):
                 segments = list(rttm_annotation.itersegments())
                 min_timestamp = segments[0].start
                 max_timestamp = segments[-1].end
-                logger.info(
-                    f"Found for {rttm_uid}: Min timestamp: {min_timestamp}, max timestamp: {max_timestamp}"
-                )
+                logger.info(f"Found for {rttm_uid}: Min timestamp: {min_timestamp}, max timestamp: {max_timestamp}")
                 # Using wavfile to keep consistency with original implementation
-                sample_rate, wave = wavfile.read(
-                    f"{self.temp_audios_dir}/{video_uid}.wav"
-                )
+                sample_rate, wave = wavfile.read(f"{self.temp_audios_dir}/{video_uid}.wav")
                 assert sample_rate == 16000
 
-                wave = wave[
-                    int(min_timestamp * sample_rate) : int(max_timestamp * sample_rate)
-                ]
+                wave = wave[int(min_timestamp * sample_rate) : int(max_timestamp * sample_rate)]
                 logger.info(f"Writing {rttm_uid} to {self.audios_dir}/{rttm_uid}.wav")
                 wavfile.write(f"{self.audios_dir}/{rttm_uid}.wav", sample_rate, wave)
         shutil.rmtree(f"{self.temp_audios_dir}")
@@ -1160,9 +1053,7 @@ class AVAAvdDataset(SpeakerDiarizationDataset):
         offset = list(annotation.itersegments())[0].start
         logger.info(f"Applying offset {offset}s to all segments of {annotation.uri}")
         for segment, _, label in annotation.itertracks(yield_label=True):
-            new_annotation[
-                Segment(segment.start - offset, segment.end - offset)
-            ] = label
+            new_annotation[Segment(segment.start - offset, segment.end - offset)] = label
         return new_annotation
 
     def fix_annotations(self) -> None:
@@ -1206,9 +1097,7 @@ class AVAAvdDataset(SpeakerDiarizationDataset):
             data[split_name] = SpeakerDiarizationData(
                 split=split_name,
                 audio_paths=[str(audio_path) for audio_path in audio_paths],
-                annotation_paths=[
-                    str(annotation_path) for annotation_path in annotation_paths
-                ],
+                annotation_paths=[str(annotation_path) for annotation_path in annotation_paths],
             )
 
         return data
@@ -1218,8 +1107,7 @@ class DIHAR3DDataset(SpeakerDiarizationDataset):
     # DIHARD-3 dataset is not available for download and needs to be acquired from LDC
     # https://catalog.ldc.upenn.edu/LDC2022S14
     MAIN_DATASET_DIR = Path(
-        os.getenv("DIHARD_DATASET_DIR")
-        or Path("~", "third_dihard_challenge_eval", "data").expanduser()
+        os.getenv("DIHARD_DATASET_DIR") or Path("~", "third_dihard_challenge_eval", "data").expanduser()
     )
 
     @property
@@ -1349,9 +1237,7 @@ class CallHomeDataset(SpeakerDiarizationDataset):
         logger.info(f"Copying {sph_path} to {self.SPH2PIPE_DIR / sph_path.name}")
         shutil.copy(sph_path, self.SPH2PIPE_DIR / sph_path.name)
         # Step 2. Run the docker-run command
-        logger.info(
-            f"Running docker-run command: make docker-run INPUT={sph_path.name} OUTPUT={wav_path.name}"
-        )
+        logger.info(f"Running docker-run command: make docker-run INPUT={sph_path.name} OUTPUT={wav_path.name}")
         cmd = f"make docker-run INPUT={sph_path.name} OUTPUT={wav_path.name}"
         subprocess.run(cmd, shell=True, check=True, cwd=self.SPH2PIPE_DIR)
         # Step 3. Move the .wav from the sph2pipe directory to the output directory
@@ -1400,7 +1286,7 @@ class CallHomeDataset(SpeakerDiarizationDataset):
         # Build the docker image based on the instructions in sph2pipe README
         # See https://github.com/EduardoPach/sph2pipe?tab=readme-ov-file#docker-usage
         logger.info("Building docker image...")
-        subprocess.run(f"make docker-build", shell=True, check=True, cwd="sph2pipe")
+        subprocess.run("make docker-build", shell=True, check=True, cwd="sph2pipe")
         logger.info("Docker image built successfully")
 
     def _setup_directories(self) -> None:
@@ -1422,9 +1308,7 @@ class CallHomeDataset(SpeakerDiarizationDataset):
         final_rttm_path = rttm_split_dir / f"{uri.strip()}.rttm"
 
         if not audio_path.exists():
-            logger.warning(
-                f"{split.capitalize()} audio file {audio_path} does not exist"
-            )
+            logger.warning(f"{split.capitalize()} audio file {audio_path} does not exist")
             return None, None
 
         if uri.strip() not in annotations:
@@ -1524,9 +1408,7 @@ class Ego4dDataset(SpeakerDiarizationDataset):
             logger.info(f"Downloading video files for split {split}...")
             subprocess.run(cmd, check=True)
         except subprocess.CalledProcessError as e:
-            logger.error(
-                f"Failed to download video files for split {split} while running: {cmd}\nError: {e}"
-            )
+            logger.error(f"Failed to download video files for split {split} while running: {cmd}\nError: {e}")
             raise
 
     def download(self) -> None:
@@ -1602,10 +1484,7 @@ class Ego4dDataset(SpeakerDiarizationDataset):
             audio_paths = sorted(list(audio_split_dir.glob("*.wav")))
             rttm_paths = sorted(list(rttm_split_dir.glob("*.rttm")))
 
-            if any(
-                audio_path.stem != rttm_path.stem
-                for audio_path, rttm_path in zip(audio_paths, rttm_paths)
-            ):
+            if any(audio_path.stem != rttm_path.stem for audio_path, rttm_path in zip(audio_paths, rttm_paths)):
                 raise ValueError(f"Mismatch in audio and RTTM files for split {split}")
 
             data[split] = SpeakerDiarizationData(
@@ -1665,9 +1544,7 @@ if __name__ == "__main__":
             "ego4d",
         ],
     )
-    parser.add_argument(
-        "--generate-only", action="store_true", help="Generate the dataset only,"
-    )
+    parser.add_argument("--generate-only", action="store_true", help="Generate the dataset only,")
     parser.add_argument(
         "--hf-repo-owner",
         type=str,

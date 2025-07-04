@@ -15,6 +15,7 @@ from ...pipeline_prediction import Transcript, Word
 from ..base import Pipeline, PipelineConfig, PipelineType, register_pipeline
 from .base import OrchestrationOutput
 
+
 logger = get_logger(__name__)
 
 TEMP_AUDIO_DIR = Path("audio_temp")
@@ -79,9 +80,7 @@ class WhisperX:
         self.diarize_model = whisperx.DiarizationPipeline(device=self.config.device)
 
     def _align(self, audio: np.ndarray, result: dict) -> dict:
-        model_a, metadata = whisperx.load_align_model(
-            language_code=result["language"], device=self.config.device
-        )
+        model_a, metadata = whisperx.load_align_model(language_code=result["language"], device=self.config.device)
         result = whisperx.align(
             transcript=result["segments"],
             model=model_a,

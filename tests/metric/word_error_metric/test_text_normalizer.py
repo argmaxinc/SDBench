@@ -39,9 +39,7 @@ class TestTextNormalizer(unittest.TestCase):
             words_without_speakers, _ = normalizer(test_case["words"], None)
 
             # Test with speakers
-            words_with_speakers, _ = normalizer(
-                test_case["words"], test_case["speakers"]
-            )
+            words_with_speakers, _ = normalizer(test_case["words"], test_case["speakers"])
 
             # Verify both methods yield the same normalized text
             self.assertEqual(

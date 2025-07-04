@@ -1,8 +1,8 @@
 setup:
-	poetry lock && poetry install
+	uv sync
 
 test:
-	poetry run pytest tests/ -v
+	uv run pytest tests/ -v
 
 install-pre-commit:
 	@echo "Installing pre-commit..."
@@ -20,28 +20,29 @@ install-pre-commit:
 
 format:
 	@pre-commit run --all-files
-	@echo "Just to be sure, we're running black again..."
-	@poetry run black .
+	@echo "Just to be sure, we're running ruff again..."
+	@uvx ruff check --fix .
+	@uvx ruff format .
 
 display-config:
-	poetry run python evaluation.py -h
+	uv run python evaluation.py -h
 
 download-datasets:
 	@echo "Downloading all available datasets..."
 	@echo "Downloading earnings21 dataset..."
-	@poetry run python common/download_dataset.py --dataset-name earnings21 --generate-only
+	@uv run python common/download_dataset.py --dataset-name earnings21 --generate-only
 	@echo "Downloading msdwild dataset..."
-	@poetry run python common/download_dataset.py --dataset-name msdwild --generate-only
+	@uv run python common/download_dataset.py --dataset-name msdwild --generate-only
 	@echo "Downloading icsi-meetings dataset..."
-	@poetry run python common/download_dataset.py --dataset-name icsi-meetings --generate-only
+	@uv run python common/download_dataset.py --dataset-name icsi-meetings --generate-only
 	@echo "Downloading ali-meetings dataset..."
-	@poetry run python common/download_dataset.py --dataset-name ali-meetings --generate-only
+	@uv run python common/download_dataset.py --dataset-name ali-meetings --generate-only
 	@echo "Downloading aishell-4 dataset..."
-	@poetry run python common/download_dataset.py --dataset-name aishell-4 --generate-only
+	@uv run python common/download_dataset.py --dataset-name aishell-4 --generate-only
 	@echo "Downloading american-life dataset..."
-	@poetry run python common/download_dataset.py --dataset-name american-life --generate-only
+	@uv run python common/download_dataset.py --dataset-name american-life --generate-only
 	@echo "Downloading ava-avd dataset..."
-	@poetry run python common/download_dataset.py --dataset-name ava-avd --generate-only
+	@uv run python common/download_dataset.py --dataset-name ava-avd --generate-only
 	@echo "Downloading callhome dataset..."
-	@poetry run python common/download_dataset.py --dataset-name callhome --generate-only
+	@uv run python common/download_dataset.py --dataset-name callhome --generate-only
 	@echo "All datasets have been downloaded successfully."

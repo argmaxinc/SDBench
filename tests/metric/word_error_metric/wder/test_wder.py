@@ -11,6 +11,7 @@ from argmaxtools.utils import get_logger
 from sdbench.metric import WordDiarizationErrorRate
 from sdbench.pipeline_prediction import Transcript
 
+
 logger = get_logger(__name__)
 
 RANDOM_SEED = 69
@@ -46,9 +47,7 @@ class ReferenceWDER:
         hyp_text, hyp_spk = self._format_input(hypothesis)
 
         # Run the Docker container with the inputs
-        logger.info(
-            f"Running Docker container with inputs: {ref_text}, {ref_spk}, {hyp_text}, {hyp_spk}"
-        )
+        logger.info(f"Running Docker container with inputs: {ref_text}, {ref_spk}, {hyp_text}, {hyp_spk}")
         result = subprocess.run(
             [
                 "docker",
