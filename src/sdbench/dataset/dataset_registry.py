@@ -3,8 +3,12 @@
 
 from typing import ClassVar
 
-from ..pipeline.base import PipelineType
+from ..pipeline.utils import PipelineType
 from .dataset_base import BaseDataset, DatasetConfig
+from .dataset_diarization import DiarizationDataset
+from .dataset_orchestration import OrchestrationDataset
+from .dataset_streaming_transcription import StreamingDataset
+from .dataset_transcription import TranscriptionDataset
 
 
 class DatasetRegistry:
@@ -34,3 +38,10 @@ class DatasetRegistry:
 
         dataset_class = cls._datasets[pipeline_type]
         return dataset_class._expected_columns
+
+
+# Register all datasets
+DatasetRegistry.register(PipelineType.DIARIZATION, DiarizationDataset)
+DatasetRegistry.register(PipelineType.ORCHESTRATION, OrchestrationDataset)
+DatasetRegistry.register(PipelineType.STREAMING_TRANSCRIPTION, StreamingDataset)
+DatasetRegistry.register(PipelineType.TRANSCRIPTION, TranscriptionDataset)

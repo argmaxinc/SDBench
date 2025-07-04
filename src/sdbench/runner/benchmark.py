@@ -9,11 +9,7 @@ import wandb
 from argmaxtools.utils import get_logger
 from pyannote.metrics.base import BaseMetric
 
-from ..dataset import (
-    DiarizationDataset,
-    DiarizationSample,
-    StreamingDataset,
-)
+from ..dataset import BaseDataset, BaseSample, DatasetRegistry
 from ..metric import MetricRegistry
 from ..pipeline import Pipeline, PipelineType
 from .config import BenchmarkConfig
@@ -79,7 +75,7 @@ class BenchmarkRunner:
 
     def _process_single_sample(
         self,
-        sample_and_id: tuple[int, DiarizationSample],
+        sample_and_id: tuple[int, BaseSample],
         pipeline: Pipeline,
         dataset_name: str,
         metrics_dict: dict,
@@ -104,7 +100,7 @@ class BenchmarkRunner:
                 prediction_time=prediction_time,
                 audio_duration=audio_duration,
                 num_speakers_predicted=len(output.prediction.labels()),
-                num_speakers_reference=len(sample.annotation.labels()),
+                num_speakers_reference=len(sample.reference.labels()),
             )
         elif pipeline.pipeline_type in [
             PipelineType.TRANSCRIPTION,
@@ -130,13 +126,13 @@ class BenchmarkRunner:
             # The metric returns a dictionary that is also stored in the metric object as a state to
             # compute the global result
             # We copy to avoid any side effects that may happen while interacting with dictionary for reporting
-            reference = sample.annotation if pipeline.pipeline_type == PipelineType.DIARIZATION else sample.transcript
-            _metric_output = metric(
-                hypothesis=output.prediction,
-                reference=reference,
-                uem=sample.uem,
-                detailed=True,
-            )
+            reference = sample.reference
+            # Get UEM from extra_info for diarization, pass as kwargs to metrics
+            kwargs = {}
+            if hasattr(sample, "extra_info") and "uem" in sample.extra_info:
+                kwargs["uem"] = sample.extra_info["uem"]
+
+            _metric_output = metric(hypothesis=output.prediction, reference=reference, detailed=True, **kwargs)
             metric_output = _metric_output.copy()
 
             detailed_result = {
@@ -185,7 +181,7 @@ class BenchmarkRunner:
     def _run_pipeline_on_dataset_parallel(
         self,
         pipeline: Pipeline,
-        dataset: DiarizationDataset,
+        dataset: BaseDataset,
         dataset_name: str,
     ) -> tuple[
         list[DiarizationSampleResult | TranscriptionSampleResult],
@@ -255,12 +251,13 @@ class BenchmarkRunner:
             metric.reset()
             # Update metric with all results
             for sample_result in per_sample_results:
-                metric(
-                    hypothesis=sample_result.prediction,
-                    reference=dataset[sample_result.sample_id].annotation,
-                    uem=dataset[sample_result.sample_id].uem,
-                    detailed=True,
-                )
+                sample = dataset[sample_result.sample_id]
+                # Get UEM from extra_info if available
+                kwargs = {}
+                if hasattr(sample, "extra_info") and "uem" in sample.extra_info:
+                    kwargs["uem"] = sample.extra_info["uem"]
+
+                metric(hypothesis=sample_result.prediction, reference=sample.reference, detailed=True, **kwargs)
 
         # Calculate global results after updating metrics
         global_results = get_global_results(
@@ -274,7 +271,7 @@ class BenchmarkRunner:
     def _run_pipeline_on_dataset(
         self,
         pipeline: Pipeline,
-        dataset: DiarizationDataset | StreamingDataset,
+        dataset: BaseDataset,
         dataset_name: str,
     ) -> tuple[
         list[DiarizationSampleResult | TranscriptionSampleResult],
@@ -339,11 +336,10 @@ class BenchmarkRunner:
                 ) as run,
             ):
                 for dataset_name, dataset_config in self.config.datasets.items():
-                    # TODO: This logic is currently hard coded. Fix this
-                    if dataset_config.dataset_id.split("/")[1].split("_")[0] == "timit":
-                        ds = StreamingDataset.from_config(dataset_config)
-                    else:
-                        ds = DiarizationDataset.from_config(dataset_config)
+                    # Use DatasetRegistry to get the appropriate dataset for the pipeline type
+                    ds = DatasetRegistry.get_dataset_for_pipeline(
+                        pipeline_type=pipeline.pipeline_type, config=dataset_config
+                    )
 
                     logger.info(f"Evaluating {pipeline.__class__.__name__} on {dataset_name}...")
 

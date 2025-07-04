@@ -6,7 +6,7 @@ from typing import Generic, TypeVar, Union
 import numpy as np
 from pydantic import BaseModel, Field
 
-from ..pipeline.base import PredictionProtocol
+from ..pipeline.utils import PredictionProtocol
 from ..pipeline_prediction import DiarizationAnnotation, StreamingTranscript, Transcript
 
 

@@ -12,12 +12,13 @@ from datasets import Dataset as HfDataset
 from datasets import load_dataset
 from pydantic import BaseModel, Field
 
+from ..pipeline.utils import PredictionProtocol
 from .dataset_utils import validate_hf_dataset_schema
 
 
 logger = get_logger(__name__)
 
-ReferenceType = TypeVar("ReferenceType")  # For the reference/ground_truth object
+ReferenceType = TypeVar("ReferenceType", bound=PredictionProtocol)  # For the reference/ground_truth object
 ExtraInfoType = TypeVar("ExtraInfoType", bound=dict[str, Any])
 SampleType = TypeVar("SampleType", bound="BaseSample")
 

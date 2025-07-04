@@ -16,7 +16,7 @@ import wandb
 from argmaxtools.utils import get_logger
 
 from ..metric import MetricOptions
-from ..pipeline.base import PredictionProtocol
+from ..pipeline.utils import PredictionProtocol
 from .data_models import (
     BaseSampleResult,
     DiarizationSampleResult,
