@@ -29,9 +29,6 @@ dependencies = [
     "speechbrain==1.0.2",
 ]
 
-[project.scripts]
-sdbench = "cli.cli:cli"
-
 [dependency-groups]
 dataset = [
     "gdown>=5.2.0,<6",
@@ -44,24 +41,12 @@ dataset = [
 ]
 dev = ["pytest>=8.3.5,<9"]
 
-[tool.uv]
-default-groups = [
-    "dataset",
-    "dev",
-]
-
-[tool.hatch.build.targets.sdist]
-include = ["src/sdbench"]
-
-[tool.hatch.build.targets.wheel]
-include = ["src/sdbench"]
-
-[tool.hatch.build.targets.wheel.sources]
-"src/sdbench" = "sdbench"
 
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["uv_build>=0.7.9,<0.8"]
+build-backend = "uv_build"
+
+##################### Ruff #####################
 
 [tool.ruff]
 line-length = 119
