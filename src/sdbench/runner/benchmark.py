@@ -9,7 +9,12 @@ import wandb
 from argmaxtools.utils import get_logger
 from pyannote.metrics.base import BaseMetric
 
-from ..dataset import DiarizationDataset, DiarizationSample
+from ..dataset import (
+    DiarizationDataset,
+    DiarizationSample,
+    StreamingDataset,
+    StreamingSample,
+)
 from ..metric import MetricRegistry
 from ..pipeline import Pipeline, PipelineType
 from .config import BenchmarkConfig
@@ -54,6 +59,7 @@ class BenchmarkRunner:
             PipelineType.DIARIZATION: DiarizationWandbLogger,
             PipelineType.TRANSCRIPTION: TranscriptionWandbLogger,
             PipelineType.ORCHESTRATION: TranscriptionWandbLogger,
+            PipelineType.STREAMING_TRANSCRIPTION: TranscriptionWandbLogger,
         }
 
     def _get_metrics(self, pipeline: Pipeline) -> dict[str, BaseMetric]:
@@ -104,6 +110,7 @@ class BenchmarkRunner:
         elif pipeline.pipeline_type in [
             PipelineType.TRANSCRIPTION,
             PipelineType.ORCHESTRATION,
+            PipelineType.STREAMING_TRANSCRIPTION,
         ]:
             sample_result = TranscriptionSampleResult(
                 dataset_name=dataset_name,
@@ -121,7 +128,8 @@ class BenchmarkRunner:
         metrics_logging_string = ""
 
         for metric_name, metric in metrics_dict.items():
-            # The metric returns a dictionary that is also stored in the metric object as a state to compute the global result
+            # The metric returns a dictionary that is also stored in the metric object as a state to
+            # compute the global result
             # We copy to avoid any side effects that may happen while interacting with dictionary for reporting
             reference = sample.annotation if pipeline.pipeline_type == PipelineType.DIARIZATION else sample.transcript
             _metric_output = metric(
@@ -149,9 +157,16 @@ class BenchmarkRunner:
                     detailed_result=detailed_result,
                 )
             )
-            metrics_logging_string += (
-                f"{metric_name} - Sample: {result:4g}\n{metric_name} - Global: {abs(metric):4g}\n"
+            formatted_result = f"{result:4g}" if result is not None else "N/A"
+            global_metric = abs(metric)
+            formatted_metric = (
+                f"{global_metric:4g}" if global_metric is not None else "N/A"
             )
+            formatted_string = (
+                f"{metric_name} - Sample: {formatted_result}\n"
+                f"{metric_name} - Global: {formatted_metric}\n"
+            )
+            metrics_logging_string += formatted_string
 
         # Create logging string
         logging_string = (
@@ -192,7 +207,8 @@ class BenchmarkRunner:
             Tuple of (sample_results, task_results, global_results)
 
         NOTE: imap (similarly to map but uses lazy evaluation) will chop the iterable into
-            chunks based on the (per_worker_chunk_size parameter) and submit them to the worker processes as separate tasks.
+            chunks based on the (per_worker_chunk_size parameter) and submit them to the worker
+            processes as separate tasks.
             A rule of thumb while setting this parameter is to base it on the number of
             worker processes and the number of samples in the dataset.
             If you spawn many worker processes, it's best you keep the chunk size small (you can keep it 1).
@@ -262,7 +278,7 @@ class BenchmarkRunner:
     def _run_pipeline_on_dataset(
         self,
         pipeline: Pipeline,
-        dataset: DiarizationDataset,
+        dataset: DiarizationDataset | StreamingDataset,
         dataset_name: str,
     ) -> tuple[
         list[DiarizationSampleResult | TranscriptionSampleResult],
@@ -327,7 +343,11 @@ class BenchmarkRunner:
                 ) as run,
             ):
                 for dataset_name, dataset_config in self.config.datasets.items():
-                    ds = DiarizationDataset.from_config(dataset_config)
+                    # TODO: This logic is currently hard coded. Fix this
+                    if dataset_config.dataset_id.split("/")[1].split("_")[0] == "timit":
+                        ds = StreamingDataset.from_config(dataset_config)
+                    else:
+                        ds = DiarizationDataset.from_config(dataset_config)
 
                     logger.info(f"Evaluating {pipeline.__class__.__name__} on {dataset_name}...")
 

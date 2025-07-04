@@ -8,9 +8,18 @@ defaults:
     - ami-sdm
     - american-life-podcast
     - ava-avd
-  - wandb_config: active
+    - timit
+    - timit-stitched
+  - wandb_config: disabled
   - metrics:
     - wer
+    - streaming_latency
+    - confirmed_streaming_latency
+    - model_timestamp_streaming_latency
+    - model_timestamp_confirmed_streaming_latency
+    - number_deletions
+    - number_substitutions
+    - number_insertions
     - wder
     - der
     - jer

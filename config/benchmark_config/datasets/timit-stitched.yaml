@@ -1,0 +1,5 @@
+timit_stitched:
+  dataset_id: argmaxinc/timit_stitched
+  split: test
+  subset: null
+  num_samples: 5

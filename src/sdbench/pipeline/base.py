@@ -21,6 +21,7 @@ class PipelineType(Enum):
     DIARIZATION = auto()
     TRANSCRIPTION = auto()
     ORCHESTRATION = auto()
+    STREAMING_TRANSCRIPTION = auto()
 
 
 def register_pipeline(cls: type["Pipeline"]) -> type["Pipeline"]:
@@ -109,7 +110,8 @@ class Pipeline(ABC):
         end_time = time.perf_counter()
         prediction_time = end_time - start_time
         parsed_output = self.parse_output(output)
-        # If `prediction_time` is not set after parsing the output, set it as the time taken to perform the diarization call
+        # If `prediction_time` is not set after parsing the output,
+        # set it as the time taken to perform the diarization call
         if parsed_output.prediction_time is None:
             parsed_output.prediction_time = prediction_time
         return parsed_output

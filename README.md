@@ -29,8 +29,14 @@ Key features include:
 
 ## 🚀 Roadmap
 
-- [ ] Distribute SpeakerKit CLI for reproduction
+- [x] Distribute SpeakerKit CLI for reproduction
 - [ ] Living Benchmark, running every other month
+
+## SpeakerKit Reproduction
+
+If you want to reproduce `SpeakerKit` benchmark values please contact to get access to a CLI and an api-key [speakerkitpro@argmaxinc.com](mailto:speakerkitpro@argmaxinc.com).
+
+If you already have access please update the `speakerkit.yaml` and follow the rest of instructions to setup the environment and run evals
 
 ## Setting up the environment
 <details>

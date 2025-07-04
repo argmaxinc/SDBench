@@ -6,4 +6,4 @@ PyAnnotePipeline:
     max_speakers: null
     use_oracle_clustering: false
     use_oracle_segmentation: false
-    use_float16: false
+    use_float16: true

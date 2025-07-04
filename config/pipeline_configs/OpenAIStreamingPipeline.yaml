@@ -1,0 +1,8 @@
+OpenAIStreamingPipeline:
+  config:
+   sample_rate: 16000
+   channels: 1
+   sample_width: 2
+   realtime_resolution: 0.02
+   endpoint_url: "https://api.openai.com/v1/realtime/transcription_sessions"
+   model: "gpt-4o-transcribe"

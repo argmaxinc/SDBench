@@ -1,0 +1,2 @@
+model_timestamp_confirmed_streaming_latency:
+  skip_overlap: false

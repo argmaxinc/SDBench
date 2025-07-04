@@ -1,0 +1,7 @@
+GladiaStreamingPipeline:
+  config:
+   sample_rate: 16000
+   channels: 1
+   sample_width: 2
+   chunksize_ms: 50
+   endpoint_url: "https://api.gladia.io/v2/live"

@@ -1,13 +1,13 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Union
 
 import numpy as np
 from pydantic import BaseModel, Field
 
 from ..pipeline.base import PredictionProtocol
-from ..pipeline_prediction import DiarizationAnnotation, Transcript
+from ..pipeline_prediction import DiarizationAnnotation, StreamingTranscript, Transcript
 
 
 Prediction = TypeVar("Prediction", bound=PredictionProtocol)
@@ -58,7 +58,9 @@ class DiarizationSampleResult(BaseSampleResult[DiarizationAnnotation]):
     )
 
 
-class TranscriptionSampleResult(BaseSampleResult[Transcript]):
+class TranscriptionSampleResult(
+    BaseSampleResult[Union[Transcript, StreamingTranscript]]
+):
     """The transcription result for a given sample of a dataset"""
 
 
@@ -69,10 +71,11 @@ class TaskResult(BaseModel):
     sample_id: int = Field(..., description="The id of the sample")
     pipeline_name: str = Field(..., description="The name of the pipeline")
     metric_name: str = Field(..., description="The name of the metric")
-    result: float = Field(..., description="The result of the metric")
-    detailed_result: dict[str, float] | None = Field(
+    result: float | None = Field(..., description="The result of the metric")
+    detailed_result: dict[str, float | None] = Field(
         None,
-        description="The detailed results of the metric i.e. breakdown by its components allowing for more granular analysis",
+        description="The detailed results of the metric i.e. breakdown by its components allowing \
+        for more granular analysis",
     )
 
 
@@ -82,14 +85,23 @@ class GlobalResult(BaseModel):
     dataset_name: str = Field(..., description="The name of the dataset")
     pipeline_name: str = Field(..., description="The name of the pipeline")
     metric_name: str = Field(..., description="The name of the metric")
-    global_result: float = Field(..., description="The global result of the metric")
-    detailed_result: dict[str, float] | None = Field(
-        None,
-        description="The detailed results of the metric i.e. breakdown by its components allowing for more granular analysis",
+    global_result: float | None = Field(
+        ..., description="The global result of the metric"
     )
-    avg_result: float = Field(..., description="The average result of the metric")
-    upper_bound: float = Field(..., description="The upper bound of the confidence interval")
-    lower_bound: float = Field(..., description="The lower bound of the confidence interval")
+    detailed_result: dict[str, float | None] = Field(
+        None,
+        description="The detailed results of the metric i.e. breakdown by its components \
+        allowing for more granular analysis",
+    )
+    avg_result: float | None = Field(
+        ..., description="The average result of the metric"
+    )
+    upper_bound: float | None = Field(
+        ..., description="The upper bound of the confidence interval"
+    )
+    lower_bound: float | None = Field(
+        ..., description="The lower bound of the confidence interval"
+    )
 
 
 class BenchmarkResult(BaseModel):

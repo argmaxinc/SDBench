@@ -1,0 +1,8 @@
+DeepgramStreamingPipeline:
+  config:
+   sample_rate: 16000
+   channels: 1
+   sample_width: 2
+   realtime_resolution: 0.02
+   model_version: "nova-3"
+   endpoint_url: "wss://api.deepgram.com/v1/listen?model={model_version}&channels={channels}&sample_rate={sample_rate}&encoding=linear16&interim_results=true"
