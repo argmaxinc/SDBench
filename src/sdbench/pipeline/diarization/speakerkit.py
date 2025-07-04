@@ -14,6 +14,7 @@ from ...pipeline_prediction import DiarizationAnnotation
 from ..base import Pipeline, PipelineType, register_pipeline
 from .common import DiarizationOutput, DiarizationPipelineConfig
 
+
 __all__ = ["SpeakerKitPipeline", "SpeakerKitPipelineConfig"]
 
 logger = get_logger(__name__)
@@ -53,9 +54,7 @@ class SpeakerKitCli:
             if self.model_path:
                 cmd.extend(["--model-path", self.model_path])
         except KeyError as e:
-            raise ValueError(
-                "`SPEAKERKIT_API_KEY` environment variable is not set"
-            ) from e
+            raise ValueError("`SPEAKERKIT_API_KEY` environment variable is not set") from e
 
         if speakerkit_input["num_speakers"] is not None:
             cmd.extend(["--num-speakers", str(speakerkit_input["num_speakers"])])
@@ -83,9 +82,7 @@ class SpeakerKitPipeline(Pipeline):
     pipeline_type = PipelineType.DIARIZATION
 
     def build_pipeline(self) -> Callable[[SpeakerKitInput], tuple[Path, float]]:
-        return SpeakerKitCli(
-            cli_path=self.config.cli_path, model_path=self.config.model_path
-        )
+        return SpeakerKitCli(cli_path=self.config.cli_path, model_path=self.config.model_path)
 
     def parse_input(self, input_sample: DiarizationSample) -> SpeakerKitInput:
         inputs: SpeakerKitInput = {

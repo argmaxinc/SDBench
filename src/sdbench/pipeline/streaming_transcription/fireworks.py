@@ -19,6 +19,7 @@ from ...pipeline import Pipeline, PipelineType, register_pipeline
 from ...pipeline_prediction import StreamingTranscript
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
 
+
 load_dotenv()
 
 logger = get_logger(__name__)
@@ -77,21 +78,13 @@ class FireworksApi:
             if message.get("checkpoint_id") == "final":
                 ws.close()
                 return
-            updated_segments = {
-                segment["id"]: segment["text"] for segment in message["segments"]
-            }
+            updated_segments = {segment["id"]: segment["text"] for segment in message["segments"]}
             audio_cursor_l.append(audio_cursor)
             with lock:
                 segments_hypot.update(updated_segments)
                 # clear_output(wait=True)
-                logger.debug(
-                    "\n"
-                    + "Transcription: "
-                    + "\n".join(f" - {k}: {v}" for k, v in segments_hypot.items())
-                )
-                predicted_transcript_hypot = " ".join(
-                    v for k, v in segments_hypot.items()
-                )
+                logger.debug("\n" + "Transcription: " + "\n".join(f" - {k}: {v}" for k, v in segments_hypot.items()))
+                predicted_transcript_hypot = " ".join(v for k, v in segments_hypot.items())
                 interim_transcripts.append(predicted_transcript_hypot)
 
         params = urllib.parse.urlencode(
@@ -182,9 +175,7 @@ class FireworksStreamingPipeline(Pipeline):
 
         audio_chunk_bytes = []
         for audio_chunk_tensor in audio_chunk_tensors:
-            audio_chunk_bytes.append(
-                (audio_chunk_tensor * 32768.0).to(torch.int16).numpy().tobytes()
-            )
+            audio_chunk_bytes.append((audio_chunk_tensor * 32768.0).to(torch.int16).numpy().tobytes())
 
         return audio_chunk_bytes
 

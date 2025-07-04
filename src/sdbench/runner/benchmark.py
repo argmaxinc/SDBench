@@ -13,7 +13,6 @@ from ..dataset import (
     DiarizationDataset,
     DiarizationSample,
     StreamingDataset,
-    StreamingSample,
 )
 from ..metric import MetricRegistry
 from ..pipeline import Pipeline, PipelineType
@@ -159,12 +158,9 @@ class BenchmarkRunner:
             )
             formatted_result = f"{result:4g}" if result is not None else "N/A"
             global_metric = abs(metric)
-            formatted_metric = (
-                f"{global_metric:4g}" if global_metric is not None else "N/A"
-            )
+            formatted_metric = f"{global_metric:4g}" if global_metric is not None else "N/A"
             formatted_string = (
-                f"{metric_name} - Sample: {formatted_result}\n"
-                f"{metric_name} - Global: {formatted_metric}\n"
+                f"{metric_name} - Sample: {formatted_result}\n{metric_name} - Global: {formatted_metric}\n"
             )
             metrics_logging_string += formatted_string
 

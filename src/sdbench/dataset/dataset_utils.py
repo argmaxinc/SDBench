@@ -8,4 +8,4 @@ def validate_hf_dataset_schema(ds: HfDataset, expected_columns: list[str]) -> No
     """Validate that the dataset has the expected columns."""
     for col in expected_columns:
         if col not in ds.column_names:
-            raise ValueError(f"Dataset is missing expected column: {col}") 
+            raise ValueError(f"Dataset is missing expected column: {col}")

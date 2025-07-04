@@ -17,6 +17,7 @@ from ...pipeline import Pipeline, PipelineType, register_pipeline
 from ...pipeline_prediction import StreamingTranscript
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
 
+
 load_dotenv()
 
 logger = get_logger(__name__)
@@ -115,14 +116,8 @@ class DeepgramApi:
                         continue
                     if msg["channel"]["alternatives"][0]["transcript"] != "":
                         audio_cursor_l.append(audio_cursor)
-                        model_timestamps_hypot.append(
-                            msg["channel"]["alternatives"][0]["words"]
-                        )
-                        interim_transcripts.append(
-                            transcript
-                            + ""
-                            + msg["channel"]["alternatives"][0]["transcript"]
-                        )
+                        model_timestamps_hypot.append(msg["channel"]["alternatives"][0]["words"])
+                        interim_transcripts.append(transcript + "" + msg["channel"]["alternatives"][0]["transcript"])
                         logger.debug(
                             "\n"
                             + "Transcription: "
@@ -132,19 +127,11 @@ class DeepgramApi:
                         )
                         if msg["is_final"]:
                             confirmed_audio_cursor_l.append(audio_cursor)
-                            transcript = (
-                                transcript
-                                + " "
-                                + msg["channel"]["alternatives"][0]["transcript"]
-                            )
+                            transcript = transcript + " " + msg["channel"]["alternatives"][0]["transcript"]
                             confirmed_interim_transcripts.append(transcript)
-                            model_timestamps_confirmed.append(
-                                msg["channel"]["alternatives"][0]["words"]
-                            )
+                            model_timestamps_confirmed.append(msg["channel"]["alternatives"][0]["words"])
 
-            await asyncio.wait(
-                [asyncio.ensure_future(sender(ws)), asyncio.ensure_future(receiver(ws))]
-            )
+            await asyncio.wait([asyncio.ensure_future(sender(ws)), asyncio.ensure_future(receiver(ws))])
             return (
                 transcript,
                 interim_transcripts,
@@ -166,9 +153,7 @@ class DeepgramApi:
             model_timestamps_hypot,
             model_timestamps_confirmed,
         ) = asyncio.get_event_loop().run_until_complete(
-            self.run(
-                sample, self.api_key, self.channels, self.sample_width, self.sample_rate
-            )
+            self.run(sample, self.api_key, self.channels, self.sample_width, self.sample_rate)
         )
         return {
             "transcript": transcript,
@@ -186,9 +171,7 @@ class DeepgramStreamingPipelineConfig(StreamingTranscriptionConfig):
     channels: int
     sample_width: int
     realtime_resolution: float
-    model_version: str = Field(
-        ..., description="The model to use for real-time transcription"
-    )
+    model_version: str = Field(..., description="The model to use for real-time transcription")
 
 
 @register_pipeline
