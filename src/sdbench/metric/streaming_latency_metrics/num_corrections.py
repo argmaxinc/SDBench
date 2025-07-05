@@ -16,6 +16,7 @@ from ...pipeline_prediction import Transcript
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
+
 logger = get_logger(__name__)
 NUM_DELETIONS = "num_deletions"
 NUM_SUBSTITUTIONS = "num_substitutions"
@@ -34,21 +35,15 @@ class BaseNumCorrections(BaseMetric):
         n_subs = 0
         n_insertion = 0
         for f in range(len(interim_results) - 1):
-            out = jiwer.process_words(
-                normalizer(interim_results[f + 1]), normalizer(interim_results[f])
-            )
+            out = jiwer.process_words(normalizer(interim_results[f + 1]), normalizer(interim_results[f]))
             prev_len = len(out.hypotheses[0])
             for alig in out.alignments[0]:
                 if alig.type == "delete" and alig.ref_start_idx < prev_len:
-                    n_deletion = (
-                        n_deletion + n_subs + alig.ref_end_idx - alig.ref_start_idx
-                    )
+                    n_deletion = n_deletion + n_subs + alig.ref_end_idx - alig.ref_start_idx
                 elif alig.type == "substitute":
                     n_subs = n_subs + alig.ref_end_idx - alig.ref_start_idx
                 elif alig.type == "insert":
-                    n_insertion = (
-                        n_insertion + (alig.ref_end_idx - alig.ref_start_idx) + 1
-                    )
+                    n_insertion = n_insertion + (alig.ref_end_idx - alig.ref_start_idx) + 1
 
         if correction_type == "insertion":
             # Intentionally Flipped
@@ -62,23 +57,17 @@ class BaseNumCorrections(BaseMetric):
     def _supports_paired_evaluation(self) -> bool:
         return True
 
-    def confidence_interval(
-        self, alpha: float = 0.9
-    ) -> tuple[float, tuple[float, float]]:
+    def confidence_interval(self, alpha: float = 0.9) -> tuple[float, tuple[float, float]]:
         if self.results_[0][0] == "NA":
             return None, (None, None)
 
         values = [r[self.metric_name_] for _, r in self.results_]
 
         if len(values) == 0:
-            raise ValueError(
-                "Please evaluate a bunch of files before computing confidence interval."
-            )
+            raise ValueError("Please evaluate a bunch of files before computing confidence interval.")
 
         elif len(values) == 1:
-            warnings.warn(
-                "Cannot compute a reliable confidence interval out of just one file."
-            )
+            warnings.warn("Cannot compute a reliable confidence interval out of just one file.")
             center = lower = upper = values[0]
             return center, (lower, upper)
 
@@ -117,9 +106,7 @@ class BaseNumCorrections(BaseMetric):
         return components[self.metric_name_]
 
 
-@MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_DELETIONS
-)
+@MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_DELETIONS)
 class NumDeletions(BaseNumCorrections):
     """Metric Calculation"""
 
@@ -131,12 +118,8 @@ class NumDeletions(BaseNumCorrections):
     def metric_components(cls) -> MetricComponents:
         return [NUM_DELETIONS]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
-        (num_corrections) = self.compute_num_corrections(
-            hypothesis.interim_results, "deletion"
-        )
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+        (num_corrections) = self.compute_num_corrections(hypothesis.interim_results, "deletion")
 
         detail = {NUM_DELETIONS: num_corrections}
 
@@ -148,9 +131,7 @@ class NumDeletions(BaseNumCorrections):
         return detail[NUM_DELETIONS]
 
 
-@MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_SUBSTITUTIONS
-)
+@MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_SUBSTITUTIONS)
 class NumSubstitutions(BaseNumCorrections):
     """Metric Calculation"""
 
@@ -162,12 +143,8 @@ class NumSubstitutions(BaseNumCorrections):
     def metric_components(cls) -> MetricComponents:
         return [NUM_SUBSTITUTIONS]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
-        (num_corrections) = self.compute_num_corrections(
-            hypothesis.interim_results, "substitutions"
-        )
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+        (num_corrections) = self.compute_num_corrections(hypothesis.interim_results, "substitutions")
 
         if num_corrections is None:
             return {
@@ -184,9 +161,7 @@ class NumSubstitutions(BaseNumCorrections):
         return detail[NUM_SUBSTITUTIONS]
 
 
-@MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_INSERTIONS
-)
+@MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_INSERTIONS)
 class NumInsertions(BaseNumCorrections):
     """Metric Calculation"""
 
@@ -198,12 +173,8 @@ class NumInsertions(BaseNumCorrections):
     def metric_components(cls) -> MetricComponents:
         return [NUM_INSERTIONS]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
-        (num_corrections) = self.compute_num_corrections(
-            hypothesis.interim_results, "insertion"
-        )
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+        (num_corrections) = self.compute_num_corrections(hypothesis.interim_results, "insertion")
 
         if num_corrections is None:
             return {

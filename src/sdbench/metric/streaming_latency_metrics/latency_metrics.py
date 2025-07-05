@@ -18,6 +18,7 @@ from ...pipeline_prediction import Transcript
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
+
 normalizer = BasicTextNormalizer()
 
 logger = get_logger(__name__)
@@ -84,22 +85,12 @@ class BaseStreamingLatency(BaseMetric):
             transcript_cursor_model = []
             model_audio_duration = []
 
-        transcript_gt = transcript_gt.translate(
-            str.maketrans("", "", string.punctuation)
-        )
+        transcript_gt = transcript_gt.translate(str.maketrans("", "", string.punctuation))
         for l in range(len(interim_results)):
-            out = jiwer.process_words(
-                normalizer(transcript_gt), normalizer(interim_results[l])
-            )
-            alignments_l = [
-                out.alignments[0][i].type for i in range(len(out.alignments[0]))
-            ]
+            out = jiwer.process_words(normalizer(transcript_gt), normalizer(interim_results[l]))
+            alignments_l = [out.alignments[0][i].type for i in range(len(out.alignments[0]))]
 
-            indices = [
-                i
-                for i, val in enumerate(alignments_l)
-                if val == "equal" or val == "substitute"
-            ]
+            indices = [i for i, val in enumerate(alignments_l) if val == "equal" or val == "substitute"]
 
             if indices:
                 first_index = indices[0]
@@ -114,23 +105,14 @@ class BaseStreamingLatency(BaseMetric):
                         normalizer(interim_results[l - 1]),
                         normalizer(interim_results[l]),
                     )
-                    alignments_types = [
-                        out_diff.alignments[0][i].type
-                        for i in range(len(out_diff.alignments[0]))
-                    ]
+                    alignments_types = [out_diff.alignments[0][i].type for i in range(len(out_diff.alignments[0]))]
                     indices_diff = [
-                        i
-                        for i, val in enumerate(alignments_types)
-                        if val == "insert" or val == "substitute"
+                        i for i, val in enumerate(alignments_types) if val == "insert" or val == "substitute"
                     ]
                     if indices_diff:
-                        diff_ref_start = out_diff.alignments[0][
-                            indices_diff[0]
-                        ].hyp_start_idx
+                        diff_ref_start = out_diff.alignments[0][indices_diff[0]].hyp_start_idx
                         # Map Start idx of updated segment to GT Transcript idx
-                        actual_idx = self.map_hypot_idx_to_ref_idx(
-                            diff_ref_start, out.alignments[0]
-                        )
+                        actual_idx = self.map_hypot_idx_to_ref_idx(diff_ref_start, out.alignments[0])
                         try:
                             start_timestamp = words[actual_idx].start / DEFAULT_SAMPLE_RATE
                         # TODO: Handle Edge Cases
@@ -152,9 +134,7 @@ class BaseStreamingLatency(BaseMetric):
                 transcript_cursor_gt.append(start_timestamp + (end_timestamp - start_timestamp))
                 gt_min_latency_l.append(audio_cursor[l] - transcript_cursor_gt[-1])
                 if model_timestamps_based:
-                    model_min_latency_l.append(
-                        audio_cursor[l] - transcript_cursor_model[-1]
-                    )
+                    model_min_latency_l.append(audio_cursor[l] - transcript_cursor_model[-1])
                 if len(transcript_cursor_gt) < 2:
                     gt_max_latency_l.append(audio_cursor[l])
                     if model_timestamps_based:
@@ -162,26 +142,16 @@ class BaseStreamingLatency(BaseMetric):
                 else:
                     gt_max_latency_l.append(audio_cursor[l] - transcript_cursor_gt[-2])
                     if model_timestamps_based:
-                        model_max_latency_l.append(
-                            audio_cursor[l] - transcript_cursor_model[-2]
-                        )
+                        model_max_latency_l.append(audio_cursor[l] - transcript_cursor_model[-2])
                 # Exclude negative latency values.
                 # A negative latency indicates that the system predicted the transcript
                 # before receiving the entire corresponding audio. This is an edge case.
                 # Map those latencies to zero
-                gt_max_latency_l[-1] = (
-                    0 if gt_max_latency_l[-1] < 0 else gt_max_latency_l[-1]
-                )
-                gt_min_latency_l[-1] = (
-                    0 if gt_min_latency_l[-1] < 0 else gt_min_latency_l[-1]
-                )
+                gt_max_latency_l[-1] = 0 if gt_max_latency_l[-1] < 0 else gt_max_latency_l[-1]
+                gt_min_latency_l[-1] = 0 if gt_min_latency_l[-1] < 0 else gt_min_latency_l[-1]
                 if model_timestamps_based:
-                    model_max_latency_l[-1] = (
-                        0 if model_max_latency_l[-1] < 0 else model_max_latency_l[-1]
-                    )
-                    model_min_latency_l[-1] = (
-                        0 if model_min_latency_l[-1] < 0 else model_min_latency_l[-1]
-                    )
+                    model_max_latency_l[-1] = 0 if model_max_latency_l[-1] < 0 else model_max_latency_l[-1]
+                    model_min_latency_l[-1] = 0 if model_min_latency_l[-1] < 0 else model_min_latency_l[-1]
 
                 logger.debug("Min GT Latency: " + str(gt_min_latency_l[-1]))
                 logger.debug("Max GT Latency: " + str(gt_max_latency_l[-1]))
@@ -197,23 +167,17 @@ class BaseStreamingLatency(BaseMetric):
     def _supports_paired_evaluation(self) -> bool:
         return True
 
-    def confidence_interval(
-        self, alpha: float = 0.9
-    ) -> tuple[float, tuple[float, float]]:
+    def confidence_interval(self, alpha: float = 0.9) -> tuple[float, tuple[float, float]]:
         if self.results_[0][0] == "NA":
             return None, (None, None)
 
         values = [r[self.metric_name_] for _, r in self.results_]
 
         if len(values) == 0:
-            raise ValueError(
-                "Please evaluate a bunch of files before computing confidence interval."
-            )
+            raise ValueError("Please evaluate a bunch of files before computing confidence interval.")
 
         elif len(values) == 1:
-            warnings.warn(
-                "Cannot compute a reliable confidence interval out of just one file."
-            )
+            warnings.warn("Cannot compute a reliable confidence interval out of just one file.")
             center = lower = upper = values[0]
             return center, (lower, upper)
 
@@ -252,9 +216,7 @@ class BaseStreamingLatency(BaseMetric):
         return components[self.metric_name_]
 
 
-@MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.STREAMING_LATENCY
-)
+@MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.STREAMING_LATENCY)
 class StreamingLatency(BaseStreamingLatency):
     """Metric Calculation
     The Average Reported Latency when an interim result t received, is computed as:
@@ -276,9 +238,7 @@ class StreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [AVG_LAT, AUD_DUR]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
         (
             gt_min_latency_l,
             gt_max_latency_l,
@@ -288,14 +248,9 @@ class StreamingLatency(BaseStreamingLatency):
         )  # GT Timestamp Based
         if gt_max_latency_l is None or gt_min_latency_l is None:
             return {AVG_LAT: None, AUD_DUR: 0}
-        avg_latency = [
-            (min + max) / 2 for min, max in zip(gt_min_latency_l, gt_max_latency_l)
-        ]
+        avg_latency = [(min + max) / 2 for min, max in zip(gt_min_latency_l, gt_max_latency_l)]
         detail = {
-            AVG_LAT: sum(
-                avg_lat * aud_dur
-                for avg_lat, aud_dur in zip(avg_latency, gt_audio_duration)
-            ),
+            AVG_LAT: sum(avg_lat * aud_dur for avg_lat, aud_dur in zip(avg_latency, gt_audio_duration)),
             AUD_DUR: np.sum(gt_audio_duration),
         }
 
@@ -307,9 +262,7 @@ class StreamingLatency(BaseStreamingLatency):
         return detail[AVG_LAT] / detail[AUD_DUR]
 
 
-@MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.CONFIRMED_STREAMING_LATENCY
-)
+@MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.CONFIRMED_STREAMING_LATENCY)
 class ConfirmedStreamingLatency(BaseStreamingLatency):
     @classmethod
     def metric_name(cls):
@@ -319,9 +272,7 @@ class ConfirmedStreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [CONFIRMED_AVG_LAT, CONFIRMED_AUD_DUR]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
         (
             gt_min_latency_l,
             gt_max_latency_l,
@@ -335,14 +286,9 @@ class ConfirmedStreamingLatency(BaseStreamingLatency):
         if gt_max_latency_l is None or gt_min_latency_l is None:
             return {CONFIRMED_AVG_LAT: None, CONFIRMED_AUD_DUR: 0}
 
-        avg_latency = [
-            (min + max) / 2 for min, max in zip(gt_min_latency_l, gt_max_latency_l)
-        ]
+        avg_latency = [(min + max) / 2 for min, max in zip(gt_min_latency_l, gt_max_latency_l)]
         detail = {
-            CONFIRMED_AVG_LAT: sum(
-                avg_lat * aud_dur
-                for avg_lat, aud_dur in zip(avg_latency, gt_audio_duration)
-            ),
+            CONFIRMED_AVG_LAT: sum(avg_lat * aud_dur for avg_lat, aud_dur in zip(avg_latency, gt_audio_duration)),
             CONFIRMED_AUD_DUR: np.sum(gt_audio_duration),
         }
 
@@ -367,9 +313,7 @@ class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [MODEL_CONFIRMED_AVG_LAT, MODEL_CONFIRMED_AUD_DUR]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
         (
             model_min_latency_l,
             model_max_latency_l,
@@ -384,14 +328,10 @@ class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
         if model_min_latency_l is None or model_max_latency_l is None:
             return {MODEL_CONFIRMED_AVG_LAT: None, MODEL_CONFIRMED_AUD_DUR: 0}
 
-        avg_latency = [
-            (min + max) / 2
-            for min, max in zip(model_min_latency_l, model_max_latency_l)
-        ]
+        avg_latency = [(min + max) / 2 for min, max in zip(model_min_latency_l, model_max_latency_l)]
         detail = {
             MODEL_CONFIRMED_AVG_LAT: sum(
-                avg_lat * aud_dur
-                for avg_lat, aud_dur in zip(avg_latency, model_audio_duration)
+                avg_lat * aud_dur for avg_lat, aud_dur in zip(avg_latency, model_audio_duration)
             ),
             MODEL_CONFIRMED_AUD_DUR: np.sum(model_audio_duration),
         }
@@ -404,9 +344,7 @@ class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
         return detail[MODEL_CONFIRMED_AVG_LAT] / detail[MODEL_CONFIRMED_AUD_DUR]
 
 
-@MetricRegistry.register_metric(
-    PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.MODELTIMESTAMP_STREAMING_LATENCY
-)
+@MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.MODELTIMESTAMP_STREAMING_LATENCY)
 class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
     @classmethod
     def metric_name(cls):
@@ -416,9 +354,7 @@ class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [MODEL_AVG_LAT, MODEL_AUD_DUR]
 
-    def compute_components(
-        self, reference: Transcript, hypothesis: Transcript, **kwargs
-    ) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
         (
             model_min_latency_l,
             model_max_latency_l,
@@ -433,15 +369,9 @@ class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
         if model_min_latency_l is None or model_max_latency_l is None:
             return {MODEL_AVG_LAT: None, MODEL_AUD_DUR: 0}
 
-        avg_latency = [
-            (min + max) / 2
-            for min, max in zip(model_min_latency_l, model_max_latency_l)
-        ]
+        avg_latency = [(min + max) / 2 for min, max in zip(model_min_latency_l, model_max_latency_l)]
         detail = {
-            MODEL_AVG_LAT: sum(
-                avg_lat * aud_dur
-                for avg_lat, aud_dur in zip(avg_latency, model_audio_duration)
-            ),
+            MODEL_AVG_LAT: sum(avg_lat * aud_dur for avg_lat, aud_dur in zip(avg_latency, model_audio_duration)),
             MODEL_AUD_DUR: np.sum(model_audio_duration),
         }
 

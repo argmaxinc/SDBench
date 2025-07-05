@@ -9,5 +9,4 @@ class StreamingTranscriptionConfig(PipelineConfig):
     endpoint_url: str
 
 
-class StreamingTranscriptionOutput(PipelineOutput[StreamingTranscript]):
-    ...
+class StreamingTranscriptionOutput(PipelineOutput[StreamingTranscript]): ...

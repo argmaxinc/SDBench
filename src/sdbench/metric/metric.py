@@ -81,9 +81,7 @@ class MetricOptions(Enum):
     # Streaming Transcription Latency Based on Confirmed Transcript and Model Word Timestamps
     # Evaluates the Latency of Realtime Transcription
     # Time passed after an audio chunk is sent until its corresponding transcription is received.
-    MODELTIMESTAMP_CONFIRMED_STRM_LATENCY = (
-        "model_timestamp_confirmed_streaming_latency"
-    )
+    MODELTIMESTAMP_CONFIRMED_STRM_LATENCY = "model_timestamp_confirmed_streaming_latency"
 
     # Number of Corrections Metrics for Streaming Transcription
     # Evaluates the Number of Deletions Based on Previous Interim Transcript

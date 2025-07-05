@@ -20,6 +20,7 @@ from ...pipeline import Pipeline, PipelineType, register_pipeline
 from ...pipeline_prediction import StreamingTranscript
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
 
+
 load_dotenv()
 
 logger = get_logger(__name__)
@@ -99,19 +100,11 @@ class GladiaApi:
                     confirmed_audio_cursor_l.append(audio_cursor)
                     text = content["data"]["utterance"]["text"].strip()
                     confirmed_interim_transcripts.append(text)
-                    model_timestamps_confirmed.append(
-                        content["data"]["utterance"]["words"]
-                    )
-                    logger.debug(
-                        "\n"
-                        + "Transcription: "
-                        + content["data"]["utterance"]["text"].strip()
-                    )
+                    model_timestamps_confirmed.append(content["data"]["utterance"]["words"])
+                    logger.debug("\n" + "Transcription: " + content["data"]["utterance"]["text"].strip())
                 if content["type"] == "post_final_transcript":
                     logger.debug("\n################ End of session ################\n")
-                    final_transcript = content["data"]["transcription"][
-                        "full_transcript"
-                    ]
+                    final_transcript = content["data"]["transcription"]["full_transcript"]
 
         async def stop_recording(websocket: ClientConnection) -> None:
             logger.debug(">>>>> Ending the recording…")
@@ -160,9 +153,7 @@ class GladiaApi:
                     logger.debug("\n################ Begin session ################\n")
                     tasks = []
                     tasks.append(asyncio.create_task(send_audio(websocket, data)))
-                    tasks.append(
-                        asyncio.create_task(print_messages_from_socket(websocket))
-                    )
+                    tasks.append(asyncio.create_task(print_messages_from_socket(websocket)))
 
                     await asyncio.wait(tasks)
                 except asyncio.exceptions.CancelledError:

@@ -3,25 +3,19 @@
 
 import time
 from abc import ABC, abstractmethod
-from enum import Enum, auto
-from typing import Any, Callable, Generic, Protocol, TypeVar, runtime_checkable
+from typing import Any, Callable, Generic, TypeVar
 
 from pydantic import BaseModel, Field
 
-from ..dataset import DiarizationSample
+from ..dataset.dataset_base import BaseSample
+from .utils import PipelineType, PredictionProtocol
 
 
 ParsedInput = TypeVar("ParsedInput")
 GenericOutput = TypeVar("GenericOutput")
+Prediction = TypeVar("Prediction", bound=PredictionProtocol)
 
 PIPELINE_REGISTRY: dict[str, "Pipeline"] = {}
-
-
-class PipelineType(Enum):
-    DIARIZATION = auto()
-    TRANSCRIPTION = auto()
-    ORCHESTRATION = auto()
-    STREAMING_TRANSCRIPTION = auto()
 
 
 def register_pipeline(cls: type["Pipeline"]) -> type["Pipeline"]:
@@ -36,26 +30,6 @@ class PipelineConfig(BaseModel):
     num_worker_processes: int = Field(None, description="Number of worker processes to use for parallel processing")
 
     per_worker_chunk_size: int = Field(1, description="Number of samples to process in each worker at a time")
-
-
-# All prediction classes that we output should conform to this protocol
-@runtime_checkable
-class PredictionProtocol(Protocol):
-    def to_annotation_file(self, output_dir: str, filename: str) -> str:
-        """
-        Must implement a method to save the prediction to a file.
-
-        Args:
-            output_dir: The directory to save the prediction to.
-            filename: The filename to save the prediction to without the extension
-
-        Returns:
-            The path to the saved prediction.
-        """
-        pass
-
-
-Prediction = TypeVar("Prediction", bound=PredictionProtocol)
 
 
 class PipelineOutput(BaseModel, Generic[Prediction]):
@@ -96,14 +70,14 @@ class Pipeline(ABC):
         pass
 
     @abstractmethod
-    def parse_input(self, input_sample: DiarizationSample) -> ParsedInput:
+    def parse_input(self, input_sample: BaseSample) -> ParsedInput:
         pass
 
     @abstractmethod
     def parse_output(self, output: GenericOutput) -> PipelineOutput:
         pass
 
-    def __call__(self, input_sample: DiarizationSample) -> PipelineOutput:
+    def __call__(self, input_sample: BaseSample) -> PipelineOutput:
         parsed_input = self.parse_input(input_sample)
         start_time = time.perf_counter()
         output = self.pipeline(parsed_input)

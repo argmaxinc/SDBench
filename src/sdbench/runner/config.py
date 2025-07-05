@@ -5,7 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-from ..dataset import DiarizationDatasetConfig
+from ..dataset import DatasetConfig
 from ..metric import MetricOptions
 
 
@@ -26,7 +26,7 @@ class BenchmarkConfig(BaseModel):
     metrics: dict[MetricOptions, dict[str, Any]] = Field(
         ..., description="The metrics that will be used for each task"
     )
-    datasets: dict[str, DiarizationDatasetConfig] = Field(..., description="Datasets to evaluate")
+    datasets: dict[str, DatasetConfig] = Field(..., description="Datasets to evaluate")
 
     class Config:
         arbitrary_types_allowed = True
