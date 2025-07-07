@@ -193,7 +193,6 @@ class FireworksStreamingPipeline(Pipeline):
             confirmed_interim_results=output["confirmed_interim_transcripts"],
             model_timestamps_hypot=output["model_timestamps_hypot"],
             model_timestamps_confirmed=output["model_timestamps_confirmed"],
-            prediction_time=None,
         )
         return StreamingTranscriptionOutput(prediction=prediction)
 

@@ -3,15 +3,18 @@
 
 from typing import Any
 
-from ..pipeline_prediction import StreamingTranscript
+from ..pipeline_prediction import Transcript
 from .dataset_base import BaseDataset, BaseSample
 
+DEFAULT_SAMPLE_RATE = 16000
 
-class StreamingSample(BaseSample[StreamingTranscript, dict[str, Any]]):
+# Although the prediction of streaming transcription pipelines is a StreamingTranscript object
+# we use the Transcript object as the reference since most of attributes from StreamingTranscript
+# are produced only at inference without any reference.
+class StreamingSample(BaseSample[Transcript, dict[str, Any]]):
     """Streaming transcription sample for real-time transcription tasks."""
 
     pass
-
 
 class StreamingDataset(BaseDataset[StreamingSample]):
     """Dataset for streaming transcription pipelines."""
@@ -19,20 +22,29 @@ class StreamingDataset(BaseDataset[StreamingSample]):
     _expected_columns = ["audio", "text"]
     _sample_class = StreamingSample
 
-    def prepare_sample(self, row: dict) -> tuple[StreamingTranscript, dict[str, Any]]:
+    def prepare_sample(self, row: dict) -> tuple[Transcript, dict[str, Any]]:
         """Prepare streaming transcript and extra info from dataset row."""
-        transcript_text = row["text"]
-        word_timestamps = row.get("word_detail", [])
-
-        reference = StreamingTranscript(
-            transcript=transcript_text,
-            audio_cursor=None,
-            interim_results=None,
-            confirmed_audio_cursor=None,
-            confirmed_interim_results=None,
-            model_timestamps_hypot=word_timestamps if word_timestamps else None,
-            model_timestamps_confirmed=None,
-            prediction_time=None,
-        )
+        transcript_text = row["text"].split()
+        word_timestamps = row.get("word_detail")
         extra_info: dict[str, Any] = {}
+
+        if word_timestamps is None:
+            reference = Transcript.from_words_info(
+                words=transcript_text,
+                start=None,
+                end=None,
+                speaker=None
+            )
+            return reference, extra_info
+        
+        # TODO: compatible datasets should have word timestamps in seconds
+        word_timestamps_start = [w["start"] / DEFAULT_SAMPLE_RATE for w in word_timestamps]
+        word_timestamps_end = [w["stop"] / DEFAULT_SAMPLE_RATE for w in word_timestamps]
+
+        reference = Transcript.from_words_info(
+            words=transcript_text,
+            start=word_timestamps_start,
+            end=word_timestamps_end,
+            speaker=None
+        )
         return reference, extra_info

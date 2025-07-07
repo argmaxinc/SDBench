@@ -6,13 +6,12 @@ import warnings
 import jiwer
 import scipy.stats
 from argmaxtools.utils import get_logger
-from pyannote.core import Annotation, Timeline
 from pyannote.metrics.base import BaseMetric
 from pyannote.metrics.types import Details, MetricComponents
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
 from ...pipeline.base import PipelineType
-from ...pipeline_prediction import Transcript
+from ...pipeline_prediction import StreamingTranscript, Transcript
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
@@ -76,8 +75,8 @@ class BaseNumCorrections(BaseMetric):
 
     def __call__(
         self,
-        reference: Timeline | Annotation,
-        hypothesis: Timeline | Annotation,
+        reference: Transcript,
+        hypothesis: StreamingTranscript,
         detailed: bool = False,
         uri: str | None = None,
         **kwargs,
@@ -105,7 +104,7 @@ class BaseNumCorrections(BaseMetric):
 
         return components[self.metric_name_]
 
-
+# NOTE: reference is not used in this metric since this is computed from hypothesis.interim_results
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_DELETIONS)
 class NumDeletions(BaseNumCorrections):
     """Metric Calculation"""
@@ -118,7 +117,7 @@ class NumDeletions(BaseNumCorrections):
     def metric_components(cls) -> MetricComponents:
         return [NUM_DELETIONS]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (num_corrections) = self.compute_num_corrections(hypothesis.interim_results, "deletion")
 
         detail = {NUM_DELETIONS: num_corrections}
@@ -130,7 +129,7 @@ class NumDeletions(BaseNumCorrections):
             return None
         return detail[NUM_DELETIONS]
 
-
+# NOTE: reference is not used in this metric since this is computed from hypothesis.interim_results
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_SUBSTITUTIONS)
 class NumSubstitutions(BaseNumCorrections):
     """Metric Calculation"""
@@ -143,7 +142,7 @@ class NumSubstitutions(BaseNumCorrections):
     def metric_components(cls) -> MetricComponents:
         return [NUM_SUBSTITUTIONS]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (num_corrections) = self.compute_num_corrections(hypothesis.interim_results, "substitutions")
 
         if num_corrections is None:
@@ -160,7 +159,7 @@ class NumSubstitutions(BaseNumCorrections):
             return None
         return detail[NUM_SUBSTITUTIONS]
 
-
+# NOTE: reference is not used in this metric since this is computed from hypothesis.interim_results
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_INSERTIONS)
 class NumInsertions(BaseNumCorrections):
     """Metric Calculation"""
@@ -173,7 +172,7 @@ class NumInsertions(BaseNumCorrections):
     def metric_components(cls) -> MetricComponents:
         return [NUM_INSERTIONS]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (num_corrections) = self.compute_num_corrections(hypothesis.interim_results, "insertion")
 
         if num_corrections is None:

@@ -140,7 +140,6 @@ class StreamingTranscript(BaseModel):
     confirmed_interim_results: list[str] | None
     model_timestamps_hypot: list | None
     model_timestamps_confirmed: list | None
-    prediction_time: float | None
 
     def get_words(self) -> list[str]:
         return [word for word in self.transcript.split(" ")]
@@ -149,7 +148,7 @@ class StreamingTranscript(BaseModel):
         return None
 
     def to_annotation_file(self, output_dir: str, filename: str) -> str:
-        path = os.path.join(output_dir, f"{filename.split('.')[0]}.json")
+        path = os.path.join(output_dir, f"{filename}.json")
         data = {
             "interim_results": self.interim_results,
             "audio_cursor": self.audio_cursor,
@@ -158,6 +157,8 @@ class StreamingTranscript(BaseModel):
             "model_timestamps_hypot": self.model_timestamps_hypot,
             "model_timestamps_confirmed": self.model_timestamps_confirmed,
         }
+
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
+
         return path

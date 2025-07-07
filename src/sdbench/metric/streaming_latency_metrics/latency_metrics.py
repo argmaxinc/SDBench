@@ -8,13 +8,12 @@ import jiwer
 import numpy as np
 import scipy.stats
 from argmaxtools.utils import get_logger
-from pyannote.core import Annotation, Timeline
 from pyannote.metrics.base import BaseMetric
 from pyannote.metrics.types import Details, MetricComponents
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
 from ...pipeline.base import PipelineType
-from ...pipeline_prediction import Transcript
+from ...pipeline_prediction import Transcript, StreamingTranscript
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
@@ -66,7 +65,7 @@ class BaseStreamingLatency(BaseMetric):
         audio_cursor,
         words,
         model_timestamps,
-        model_timestamps_based=False,
+        model_timestamps_based: bool = False,
     ):
         # If API doesn't support Hypothesis/Confirmed text return None
         if interim_results is None or audio_cursor is None:
@@ -74,6 +73,7 @@ class BaseStreamingLatency(BaseMetric):
         # If API doesn't support word timestamps return None
         if (model_timestamps is None) and model_timestamps_based:
             return None, None, None
+        
         transcript_gt = " ".join(word.word for word in words)
         transcript_cursor_gt = []
         gt_min_latency_l = []
@@ -186,8 +186,8 @@ class BaseStreamingLatency(BaseMetric):
 
     def __call__(
         self,
-        reference: Timeline | Annotation,
-        hypothesis: Timeline | Annotation,
+        reference: Transcript,
+        hypothesis: StreamingTranscript,
         detailed: bool = False,
         uri: str | None = None,
         **kwargs,
@@ -238,7 +238,7 @@ class StreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [AVG_LAT, AUD_DUR]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (
             gt_min_latency_l,
             gt_max_latency_l,
@@ -272,7 +272,7 @@ class ConfirmedStreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [CONFIRMED_AVG_LAT, CONFIRMED_AUD_DUR]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (
             gt_min_latency_l,
             gt_max_latency_l,
@@ -313,12 +313,12 @@ class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [MODEL_CONFIRMED_AVG_LAT, MODEL_CONFIRMED_AUD_DUR]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (
             model_min_latency_l,
             model_max_latency_l,
             model_audio_duration,
-        ) = super().compute_min_max_latency(
+        ) = self.compute_min_max_latency(
             hypothesis.confirmed_interim_results,
             hypothesis.confirmed_audio_cursor,
             reference.words,
@@ -354,7 +354,7 @@ class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
     def metric_components(cls) -> MetricComponents:
         return [MODEL_AVG_LAT, MODEL_AUD_DUR]
 
-    def compute_components(self, reference: Transcript, hypothesis: Transcript, **kwargs) -> Details:
+    def compute_components(self, reference: Transcript, hypothesis: StreamingTranscript, **kwargs) -> Details:
         (
             model_min_latency_l,
             model_max_latency_l,
