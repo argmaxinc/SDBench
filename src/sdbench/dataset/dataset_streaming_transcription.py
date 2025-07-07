@@ -6,7 +6,9 @@ from typing import Any
 from ..pipeline_prediction import Transcript
 from .dataset_base import BaseDataset, BaseSample
 
+
 DEFAULT_SAMPLE_RATE = 16000
+
 
 # Although the prediction of streaming transcription pipelines is a StreamingTranscript object
 # we use the Transcript object as the reference since most of attributes from StreamingTranscript
@@ -15,6 +17,7 @@ class StreamingSample(BaseSample[Transcript, dict[str, Any]]):
     """Streaming transcription sample for real-time transcription tasks."""
 
     pass
+
 
 class StreamingDataset(BaseDataset[StreamingSample]):
     """Dataset for streaming transcription pipelines."""
@@ -29,22 +32,14 @@ class StreamingDataset(BaseDataset[StreamingSample]):
         extra_info: dict[str, Any] = {}
 
         if word_timestamps is None:
-            reference = Transcript.from_words_info(
-                words=transcript_text,
-                start=None,
-                end=None,
-                speaker=None
-            )
+            reference = Transcript.from_words_info(words=transcript_text, start=None, end=None, speaker=None)
             return reference, extra_info
-        
+
         # TODO: compatible datasets should have word timestamps in seconds
         word_timestamps_start = [w["start"] / DEFAULT_SAMPLE_RATE for w in word_timestamps]
         word_timestamps_end = [w["stop"] / DEFAULT_SAMPLE_RATE for w in word_timestamps]
 
         reference = Transcript.from_words_info(
-            words=transcript_text,
-            start=word_timestamps_start,
-            end=word_timestamps_end,
-            speaker=None
+            words=transcript_text, start=word_timestamps_start, end=word_timestamps_end, speaker=None
         )
         return reference, extra_info

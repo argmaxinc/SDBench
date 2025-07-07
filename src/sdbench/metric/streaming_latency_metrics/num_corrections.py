@@ -104,6 +104,7 @@ class BaseNumCorrections(BaseMetric):
 
         return components[self.metric_name_]
 
+
 # NOTE: reference is not used in this metric since this is computed from hypothesis.interim_results
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_DELETIONS)
 class NumDeletions(BaseNumCorrections):
@@ -128,6 +129,7 @@ class NumDeletions(BaseNumCorrections):
         if detail[NUM_DELETIONS] is None:
             return None
         return detail[NUM_DELETIONS]
+
 
 # NOTE: reference is not used in this metric since this is computed from hypothesis.interim_results
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_SUBSTITUTIONS)
@@ -158,6 +160,7 @@ class NumSubstitutions(BaseNumCorrections):
         if detail[NUM_SUBSTITUTIONS] is None:
             return None
         return detail[NUM_SUBSTITUTIONS]
+
 
 # NOTE: reference is not used in this metric since this is computed from hypothesis.interim_results
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.NUM_INSERTIONS)

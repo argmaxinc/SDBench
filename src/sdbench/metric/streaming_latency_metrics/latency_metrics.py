@@ -13,7 +13,7 @@ from pyannote.metrics.types import Details, MetricComponents
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
 from ...pipeline.base import PipelineType
-from ...pipeline_prediction import Transcript, StreamingTranscript
+from ...pipeline_prediction import StreamingTranscript, Transcript
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
@@ -72,7 +72,7 @@ class BaseStreamingLatency(BaseMetric):
         # If API doesn't support word timestamps return None
         if (model_timestamps is None) and model_timestamps_based:
             return None, None, None
-        
+
         transcript_gt = " ".join(word.word for word in words)
         transcript_cursor_gt = []
         gt_min_latency_l = []

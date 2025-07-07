@@ -14,7 +14,7 @@ class PipelineType(Enum):
     STREAMING_TRANSCRIPTION = auto()
 
 
-# All prediction classes that we output should conform to this 
+# All prediction classes that we output should conform to this
 # TODO: add `load_from_annotation` to protocol
 @runtime_checkable
 class PredictionProtocol(Protocol):
