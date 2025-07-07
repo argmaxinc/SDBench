@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from ...dataset import DiarizationSample
 from ...pipeline_prediction import Transcript, Word
 from ..base import Pipeline, PipelineConfig, PipelineType, register_pipeline
-from .base import OrchestrationOutput
+from .common import OrchestrationOutput
 
 
 logger = get_logger(__name__)

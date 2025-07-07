@@ -59,7 +59,12 @@ class DiarizationSampleResult(BaseSampleResult[DiarizationAnnotation]):
 
 
 class TranscriptionSampleResult(BaseSampleResult[Union[Transcript, StreamingTranscript]]):
-    """The transcription result for a given sample of a dataset"""
+    """The transcription result for a given sample of a dataset.
+    This could be associated with the following pipeline types:
+    - Transcription
+    - Streaming Transcription
+    - Orchestration
+    """
 
 
 class TaskResult(BaseModel):

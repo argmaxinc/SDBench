@@ -48,6 +48,10 @@ class DiarizationAnnotation(Annotation):
     def speakers(self) -> np.ndarray:
         return np.array([speaker for _, _, speaker in self.itertracks(yield_label=True)])
 
+    @property
+    def num_speakers(self) -> int:
+        return len(np.unique(self.speakers))
+
 
 # ASR or Orchestration Prediction
 class Word(BaseModel):

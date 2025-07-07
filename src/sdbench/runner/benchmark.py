@@ -26,6 +26,13 @@ from .wandb_logger import DiarizationWandbLogger, TranscriptionWandbLogger
 
 logger = get_logger(__name__)
 
+PIPELINE_TYPE_TO_SAMPLE_RESULT = {
+    PipelineType.DIARIZATION: DiarizationSampleResult,
+    PipelineType.TRANSCRIPTION: TranscriptionSampleResult,
+    PipelineType.ORCHESTRATION: TranscriptionSampleResult,
+    PipelineType.STREAMING_TRANSCRIPTION: TranscriptionSampleResult,
+}
+
 
 class ProcessingResult(NamedTuple):
     sample_result: DiarizationSampleResult | TranscriptionSampleResult
@@ -82,56 +89,36 @@ class BenchmarkRunner:
         dataset_length: int,
     ) -> ProcessingResult:
         sample_id, sample = sample_and_id
-        # Run pipeline
         output = pipeline(sample)
-        prediction_time = output.prediction_time
         audio_duration = sample.get_audio_duration()
+        prediction_time = output.prediction_time
 
-        # Create sample result based on pipeline type
+        # Create sample result
+        sample_result_class = PIPELINE_TYPE_TO_SAMPLE_RESULT[pipeline.pipeline_type]
+        sample_results_attributes = dict(
+            dataset_name=dataset_name,
+            sample_id=sample_id,
+            pipeline_name=pipeline.__class__.__name__,
+            audio_duration=audio_duration,
+            **output.model_dump(),
+        )
+
         if pipeline.pipeline_type == PipelineType.DIARIZATION:
-            sample_result = DiarizationSampleResult(
-                dataset_name=dataset_name,
-                sample_id=sample_id,
-                pipeline_name=pipeline.__class__.__name__,
-                prediction=output.prediction,
-                embeddings=output.embeddings,
-                cluster_labels=output.cluster_labels,
-                centroids=output.centroids,
-                prediction_time=prediction_time,
-                audio_duration=audio_duration,
-                num_speakers_predicted=len(output.prediction.labels()),
-                num_speakers_reference=len(sample.reference.labels()),
-            )
-        elif pipeline.pipeline_type in [
-            PipelineType.TRANSCRIPTION,
-            PipelineType.ORCHESTRATION,
-            PipelineType.STREAMING_TRANSCRIPTION,
-        ]:
-            sample_result = TranscriptionSampleResult(
-                dataset_name=dataset_name,
-                sample_id=sample_id,
-                pipeline_name=pipeline.__class__.__name__,
-                prediction=output.prediction,
-                prediction_time=prediction_time,
-                audio_duration=audio_duration,
-            )
-        else:
-            raise ValueError(f"Unsupported pipeline type: {pipeline.pipeline_type}")
+            sample_results_attributes["num_speakers_predicted"] = output.prediction.num_speakers
+            sample_results_attributes["num_speakers_reference"] = sample.reference.num_speakers
+
+        sample_result = sample_result_class(**sample_results_attributes)
 
         # Process metrics
         task_results = []
         metrics_logging_string = ""
 
         for metric_name, metric in metrics_dict.items():
-            # The metric returns a dictionary that is also stored in the metric object as a state to
-            # compute the global result
-            # We copy to avoid any side effects that may happen while interacting with dictionary for reporting
             reference = sample.reference
-            # Get UEM from extra_info for diarization, pass as kwargs to metrics
-            kwargs = {}
-            if hasattr(sample, "extra_info") and "uem" in sample.extra_info:
-                kwargs["uem"] = sample.extra_info["uem"]
+            kwargs = sample.extra_info
 
+            # The metric returns a dictionary that is also stored in the metric object as a state to compute the global result
+            # We copy to avoid any side effects that may happen while interacting with dictionary for reporting
             _metric_output = metric(hypothesis=output.prediction, reference=reference, detailed=True, **kwargs)
             metric_output = _metric_output.copy()
 
