@@ -133,13 +133,19 @@ class Transcript(BaseModel):
 
 
 class StreamingTranscript(BaseModel):
-    transcript: str = Field(..., description="")
-    audio_cursor: list[float] | None
-    interim_results: list[str] | None
-    confirmed_audio_cursor: list[float] | None
-    confirmed_interim_results: list[str] | None
-    model_timestamps_hypot: list | None
-    model_timestamps_confirmed: list | None
+    transcript: str = Field(..., description="The final transcript")
+    audio_cursor: list[float] | None = Field(None, description="The audio cursor in seconds")
+    interim_results: list[str] | None = Field(None, description="The interim results")
+    confirmed_audio_cursor: list[float] | None = Field(None, description="The confirmed audio cursor in seconds")
+    confirmed_interim_results: list[str] | None = Field(None, description="The confirmed interim results")
+    model_timestamps_hypothesis: list[list[dict[str, float]]] | None = Field(
+        None,
+        description="The model timestamps for the interim results as a list of lists of dictionaries with `start` and `end` keys",
+    )
+    model_timestamps_confirmed: list[list[dict[str, float]]] | None = Field(
+        None,
+        description="The model timestamps for the confirmed interim results as a list of lists of dictionaries with `start` and `end` keys",
+    )
 
     def get_words(self) -> list[str]:
         return [word for word in self.transcript.split(" ")]
@@ -154,7 +160,7 @@ class StreamingTranscript(BaseModel):
             "audio_cursor": self.audio_cursor,
             "confirmed_audio_cursor": self.confirmed_audio_cursor,
             "confirmed_interim_results": self.confirmed_interim_results,
-            "model_timestamps_hypot": self.model_timestamps_hypot,
+            "model_timestamps_hypothesis": self.model_timestamps_hypothesis,
             "model_timestamps_confirmed": self.model_timestamps_confirmed,
         }
 

@@ -15,7 +15,8 @@ from dotenv import load_dotenv
 
 from sdbench.dataset import StreamingSample
 
-from ...pipeline import Pipeline, PipelineType, register_pipeline
+from ...pipeline import Pipeline, register_pipeline
+from ...pipeline.utils import PipelineType
 from ...pipeline_prediction import StreamingTranscript
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
 
@@ -120,7 +121,7 @@ class FireworksApi:
             audio_cursor_l,
             confirmed_interim_transcripts,
             confirmed_audio_cursor_l,
-            model_timestamps_hypot,
+            model_timestamps_hypothesis,
             model_timestamps_confirmed,
         ) = self.run(sample)
         return {
@@ -129,7 +130,7 @@ class FireworksApi:
             "audio_cursor": audio_cursor_l,
             "confirmed_interim_transcripts": confirmed_interim_transcripts,
             "confirmed_audio_cursor": confirmed_audio_cursor_l,
-            "model_timestamps_hypot": model_timestamps_hypot,
+            "model_timestamps_hypothesis": model_timestamps_hypothesis,
             "model_timestamps_confirmed": model_timestamps_confirmed,
         }
 
@@ -185,15 +186,31 @@ class FireworksStreamingPipeline(Pipeline):
         return audio_data_byte
 
     def parse_output(self, output) -> StreamingTranscriptionOutput:
+        model_timestamps_hypothesis = output["model_timestamps_hypothesis"]
+        model_timestamps_confirmed = output["model_timestamps_confirmed"]
+
+        if model_timestamps_hypothesis is not None:
+            model_timestamps_hypothesis = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_hypothesis
+            ]
+
+        if model_timestamps_confirmed is not None:
+            model_timestamps_confirmed = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_confirmed
+            ]
+
         prediction = StreamingTranscript(
             transcript=output["transcript"],
             audio_cursor=output["audio_cursor"],
             interim_results=output["interim_transcripts"],
             confirmed_audio_cursor=output["confirmed_audio_cursor"],
             confirmed_interim_results=output["confirmed_interim_transcripts"],
-            model_timestamps_hypot=output["model_timestamps_hypot"],
-            model_timestamps_confirmed=output["model_timestamps_confirmed"],
+            model_timestamps_hypothesis=model_timestamps_hypothesis,
+            model_timestamps_confirmed=model_timestamps_confirmed,
         )
+
         return StreamingTranscriptionOutput(prediction=prediction)
 
     def build_pipeline(self):

@@ -13,7 +13,7 @@ from pyannote.metrics.types import Details, MetricComponents
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
 from ...pipeline.base import PipelineType
-from ...pipeline_prediction import StreamingTranscript, Transcript
+from ...pipeline_prediction import StreamingTranscript, Transcript, Word
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
@@ -52,7 +52,7 @@ class BaseStreamingLatency(BaseMetric):
     the content in result t.
     """
 
-    def map_hypot_idx_to_ref_idx(self, hypot_idx, alignment_chunks):
+    def map_hypot_idx_to_ref_idx(self, hypot_idx: int, alignment_chunks: list[jiwer.AlignmentChunk]) -> int:
         for chunk in alignment_chunks:
             if chunk.hyp_start_idx <= hypot_idx < chunk.hyp_end_idx:
                 offset = hypot_idx - chunk.hyp_start_idx
@@ -60,10 +60,10 @@ class BaseStreamingLatency(BaseMetric):
 
     def compute_min_max_latency(
         self,
-        interim_results,
-        audio_cursor,
-        words,
-        model_timestamps,
+        interim_results: list[str],
+        audio_cursor: list[float],
+        words: list[Word],
+        model_timestamps: list[list[dict[str, float]]],
         model_timestamps_based: bool = False,
     ):
         # If API doesn't support Hypothesis/Confirmed text return None
@@ -190,7 +190,7 @@ class BaseStreamingLatency(BaseMetric):
         detailed: bool = False,
         uri: str | None = None,
         **kwargs,
-    ):
+    ) -> Details | float:
         # compute metric components
         components = self.compute_components(reference, hypothesis, **kwargs)
 
@@ -230,7 +230,7 @@ class StreamingLatency(BaseStreamingLatency):
     """
 
     @classmethod
-    def metric_name(cls):
+    def metric_name(cls) -> str:
         return STREAMING_LATENCY
 
     @classmethod
@@ -264,7 +264,7 @@ class StreamingLatency(BaseStreamingLatency):
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.CONFIRMED_STREAMING_LATENCY)
 class ConfirmedStreamingLatency(BaseStreamingLatency):
     @classmethod
-    def metric_name(cls):
+    def metric_name(cls) -> str:
         return CONFIRMED_STREAMING_LATENCY
 
     @classmethod
@@ -305,7 +305,7 @@ class ConfirmedStreamingLatency(BaseStreamingLatency):
 )
 class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
     @classmethod
-    def metric_name(cls):
+    def metric_name(cls) -> str:
         return MODEL_STREAMING_LATENCY
 
     @classmethod
@@ -346,7 +346,7 @@ class ModelTimestampBasedConfirmedStreamingLatency(BaseStreamingLatency):
 @MetricRegistry.register_metric(PipelineType.STREAMING_TRANSCRIPTION, MetricOptions.MODELTIMESTAMP_STREAMING_LATENCY)
 class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
     @classmethod
-    def metric_name(cls):
+    def metric_name(cls) -> str:
         return MODEL_STREAMING_LATENCY
 
     @classmethod
@@ -362,7 +362,7 @@ class ModelTimestampBasedStreamingLatency(BaseStreamingLatency):
             hypothesis.interim_results,
             hypothesis.audio_cursor,
             reference.words,
-            hypothesis.model_timestamps_hypot,
+            hypothesis.model_timestamps_hypothesis,
             model_timestamps_based=True,
         )
         if model_min_latency_l is None or model_max_latency_l is None:
