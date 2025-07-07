@@ -111,7 +111,7 @@ class BaseDataset(ABC, Generic[SampleType]):
         )
 
     @abstractmethod
-    def prepare_sample(self, row: dict) -> tuple[Any, dict[str, Any]]:
+    def prepare_sample(self, row: dict) -> tuple[ReferenceType, ExtraInfoType]:
         """Prepare the reference and extra_info from dataset row.
 
         Returns:
@@ -121,7 +121,12 @@ class BaseDataset(ABC, Generic[SampleType]):
         pass
 
     def _create_sample(
-        self, audio_name: str, waveform: np.ndarray, sample_rate: int, reference: Any, extra_info: dict[str, Any]
+        self,
+        audio_name: str,
+        waveform: np.ndarray,
+        sample_rate: int,
+        reference: ReferenceType,
+        extra_info: ExtraInfoType,
     ) -> SampleType:
         """Create the specific sample type using the class-defined sample class."""
         return self._sample_class(
