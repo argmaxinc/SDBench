@@ -33,7 +33,6 @@ MODEL_AUD_DUR = "model_timestamp_audio_duration"
 MODEL_CONFIRMED_STREAMING_LATENCY = "model_timestamp_confirmed_streaming_latency"
 MODEL_CONFIRMED_AVG_LAT = "model_timestamp_confirmed_scaled_avg_latency"
 MODEL_CONFIRMED_AUD_DUR = "model_timestamp_confirmed_audio_duration"
-DEFAULT_SAMPLE_RATE = 16000
 
 # Latency metrics are adapted from the example at:
 # https://developers.deepgram.com/docs/measuring-streaming-latency
@@ -98,7 +97,7 @@ class BaseStreamingLatency(BaseMetric):
                 ref_start = out.alignments[0][first_index].ref_start_idx
                 ref_end = out.alignments[0][last_index].ref_end_idx
                 if l == 0:
-                    start_timestamp = words[ref_start].start / DEFAULT_SAMPLE_RATE
+                    start_timestamp = words[ref_start].start
                 else:
                     # Find the updated segment
                     out_diff = jiwer.process_words(
@@ -114,7 +113,7 @@ class BaseStreamingLatency(BaseMetric):
                         # Map Start idx of updated segment to GT Transcript idx
                         actual_idx = self.map_hypot_idx_to_ref_idx(diff_ref_start, out.alignments[0])
                         try:
-                            start_timestamp = words[actual_idx].start / DEFAULT_SAMPLE_RATE
+                            start_timestamp = words[actual_idx].start
                         # TODO: Handle Edge Cases
                         except:
                             continue
@@ -123,7 +122,7 @@ class BaseStreamingLatency(BaseMetric):
                         # exclude this interim result from latency calculation
                         continue
 
-                end_timestamp = words[ref_end - 1].end / DEFAULT_SAMPLE_RATE
+                end_timestamp = words[ref_end - 1].end
                 gt_audio_duration.append(end_timestamp - start_timestamp)
                 if model_timestamps_based:
                     start_timestamp_model = model_timestamps[l][0]["start"]
