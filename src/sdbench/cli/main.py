@@ -1,7 +1,7 @@
 """Main CLI entry point for sdbench-cli."""
 
 import typer
-from typing import Optional
+
 
 app = typer.Typer(
     name="sdbench-cli",
@@ -11,16 +11,10 @@ app = typer.Typer(
 
 
 @app.command()
-def evaluation(
-    config: Optional[str] = typer.Option(
-        None, "--config", "-c", help="Path to configuration file"
-    ),
-    output_dir: Optional[str] = typer.Option(
-        None, "--output-dir", "-o", help="Output directory for results"
-    ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose output"
-    ),
+def evaluate(
+    config: str | None = typer.Option(None, "--config", "-c", help="Path to configuration file"),
+    output_dir: str | None = typer.Option(None, "--output-dir", "-o", help="Output directory for results"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
 ) -> None:
     """Run evaluation benchmarks."""
     # TODO: Implement evaluation logic
@@ -29,18 +23,10 @@ def evaluation(
 
 @app.command()
 def inference(
-    model: Optional[str] = typer.Option(
-        None, "--model", "-m", help="Model to use for inference"
-    ),
-    input_file: Optional[str] = typer.Option(
-        None, "--input", "-i", help="Input audio file"
-    ),
-    output_file: Optional[str] = typer.Option(
-        None, "--output", "-o", help="Output file path"
-    ),
-    verbose: bool = typer.Option(
-        False, "--verbose", "-v", help="Enable verbose output"
-    ),
+    model: str | None = typer.Option(None, "--model", "-m", help="Model to use for inference"),
+    input_file: str | None = typer.Option(None, "--input", "-i", help="Input audio file"),
+    output_file: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
 ) -> None:
     """Run inference on audio files."""
     # TODO: Implement inference logic
@@ -53,4 +39,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main() 
+    main()
