@@ -30,7 +30,11 @@ dependencies = [
     "websockets>=10.1,<11",
     "python-dotenv>=1.0.0,<2",
     "websocket-client>=1.8.0,<2",
+    "typer>=0.16.0",
 ]
+
+[project.scripts]
+sdbench-cli = "sdbench.cli.main:main"
 
 [dependency-groups]
 dataset = [
