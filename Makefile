@@ -1,5 +1,7 @@
 setup:
 	uv sync
+	make install-pre-commit
+	pre-commit install
 
 test:
 	uv run pytest tests/ -v
