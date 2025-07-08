@@ -136,6 +136,7 @@ class Transcript(BaseModel):
         return path
 
 
+#NOTE: StreamingTranscript is used only as output of pipelines. The reference for streaming transcript is of type Transcript.
 class StreamingTranscript(BaseModel):
     transcript: str = Field(..., description="The final transcript")
     audio_cursor: list[float] | None = Field(None, description="The audio cursor in seconds")
