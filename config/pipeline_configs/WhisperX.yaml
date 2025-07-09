@@ -3,5 +3,6 @@ WhisperXPipeline:
     out_dir: "./whisperx_output"
     model_name: tiny
     device: cpu
-    compute_type: float32
+    compute_type: int8
     batch_size: 16
+    threads: 8
