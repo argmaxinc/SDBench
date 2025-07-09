@@ -1,6 +1,8 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
+# Import dataset aliases to register them
+from . import dataset_aliases  # noqa: F401
 from .dataset_base import BaseDataset, BaseSample, DatasetConfig
 from .dataset_diarization import DiarizationDataset, DiarizationSample
 from .dataset_orchestration import OrchestrationDataset, OrchestrationSample

@@ -57,6 +57,8 @@ build-backend = "uv_build"
 
 [tool.ruff]
 line-length = 119
+unsafe-fixes = false
+
 
 [tool.ruff.lint]
 # Never enforce `E501` (line length violations).

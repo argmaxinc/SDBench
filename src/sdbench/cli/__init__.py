@@ -1,1 +1,1 @@
-"""CLI module for sdbench.""" 
+"""CLI module for sdbench."""

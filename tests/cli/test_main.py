@@ -44,4 +44,4 @@ def test_inference_command_placeholder(runner):
     """Test that the inference command returns placeholder message."""
     result = runner.invoke(app, ["inference"])
     assert result.exit_code == 0
-    assert "Inference command - implementation pending" in result.output 
+    assert "Inference command - implementation pending" in result.output

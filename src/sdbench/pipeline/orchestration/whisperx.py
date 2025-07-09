@@ -14,6 +14,7 @@ from ...pipeline_prediction import Transcript
 from ..base import Pipeline, PipelineConfig, PipelineType, register_pipeline
 from .common import OrchestrationOutput
 
+
 logger = get_logger(__name__)
 
 TEMP_AUDIO_DIR = Path("audio_temp")
