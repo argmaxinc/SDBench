@@ -34,6 +34,7 @@ class DeepgramApi:
         self.channels = cfg.channels
         self.sample_width = cfg.sample_width
         self.sample_rate = cfg.sample_rate
+        self.host_url = os.getenv("DEEPGRAM_HOST_URL", "wss://api.deepgram.com")
 
     async def run(self, data, key, channels, sample_width, sample_rate):
         """Connect to the Deepgram real-time streaming endpoint, stream the data
@@ -64,7 +65,7 @@ class DeepgramApi:
         model_timestamps_confirmed = []
         # Connect to the real-time streaming endpoint, attaching our API key.
         async with websockets.connect(
-            f"wss://api.deepgram.com/v1/listen?model={self.model_version}&channels={channels}&sample_rate={sample_rate}&encoding=linear16&interim_results=true",
+            f"{self.host_url}/v1/listen?model={self.model_version}&channels={channels}&sample_rate={sample_rate}&encoding=linear16&interim_results=true",
             extra_headers={
                 "Authorization": "Token {}".format(key),
             },
