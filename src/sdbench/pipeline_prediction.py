@@ -1,6 +1,7 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
+import json
 import os
 from collections import defaultdict
 
@@ -9,7 +10,6 @@ import pandas as pd
 from pyannote.core import Annotation
 from pyannote.database.util import load_rttm
 from pydantic import BaseModel, Field
-import json
 
 
 # Diarization Prediction
@@ -47,6 +47,10 @@ class DiarizationAnnotation(Annotation):
     @property
     def speakers(self) -> np.ndarray:
         return np.array([speaker for _, _, speaker in self.itertracks(yield_label=True)])
+
+    @property
+    def num_speakers(self) -> int:
+        return len(np.unique(self.speakers))
 
 
 # ASR or Orchestration Prediction
@@ -132,15 +136,21 @@ class Transcript(BaseModel):
         return path
 
 
+#NOTE: StreamingTranscript is used only as output of pipelines. The reference for streaming transcript is of type Transcript.
 class StreamingTranscript(BaseModel):
-    transcript: str = Field(..., description="")
-    audio_cursor: list[float] | None
-    interim_results: list[str] | None
-    confirmed_audio_cursor: list[float] | None
-    confirmed_interim_results: list[str] | None
-    model_timestamps_hypot: list | None
-    model_timestamps_confirmed: list | None
-    prediction_time: float | None
+    transcript: str = Field(..., description="The final transcript")
+    audio_cursor: list[float] | None = Field(None, description="The audio cursor in seconds")
+    interim_results: list[str] | None = Field(None, description="The interim results")
+    confirmed_audio_cursor: list[float] | None = Field(None, description="The confirmed audio cursor in seconds")
+    confirmed_interim_results: list[str] | None = Field(None, description="The confirmed interim results")
+    model_timestamps_hypothesis: list[list[dict[str, float]]] | None = Field(
+        None,
+        description="The model timestamps for the interim results as a list of lists of dictionaries with `start` and `end` keys",
+    )
+    model_timestamps_confirmed: list[list[dict[str, float]]] | None = Field(
+        None,
+        description="The model timestamps for the confirmed interim results as a list of lists of dictionaries with `start` and `end` keys",
+    )
 
     def get_words(self) -> list[str]:
         return [word for word in self.transcript.split(" ")]
@@ -149,15 +159,17 @@ class StreamingTranscript(BaseModel):
         return None
 
     def to_annotation_file(self, output_dir: str, filename: str) -> str:
-        path = os.path.join(output_dir, f"{filename.split('.')[0]}.json")
+        path = os.path.join(output_dir, f"{filename}.json")
         data = {
-                "interim_results": self.interim_results,
-                "audio_cursor": self.audio_cursor,
-                "confirmed_audio_cursor": self.confirmed_audio_cursor,
-                "confirmed_interim_results": self.confirmed_interim_results,
-                "model_timestamps_hypot": self.model_timestamps_hypot,
-                "model_timestamps_confirmed": self.model_timestamps_confirmed,
-                }
+            "interim_results": self.interim_results,
+            "audio_cursor": self.audio_cursor,
+            "confirmed_audio_cursor": self.confirmed_audio_cursor,
+            "confirmed_interim_results": self.confirmed_interim_results,
+            "model_timestamps_hypothesis": self.model_timestamps_hypothesis,
+            "model_timestamps_confirmed": self.model_timestamps_confirmed,
+        }
+
         with open(path, "w") as f:
             json.dump(data, f, indent=2)
+
         return path

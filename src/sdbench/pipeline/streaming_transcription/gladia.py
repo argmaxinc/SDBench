@@ -16,9 +16,11 @@ from websockets.exceptions import ConnectionClosedOK
 
 from sdbench.dataset import StreamingSample
 
-from ...pipeline import Pipeline, PipelineType, register_pipeline
+from ...pipeline import Pipeline, register_pipeline
+from ...pipeline.utils import PipelineType
 from ...pipeline_prediction import StreamingTranscript
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
+
 
 load_dotenv()
 
@@ -99,19 +101,11 @@ class GladiaApi:
                     confirmed_audio_cursor_l.append(audio_cursor)
                     text = content["data"]["utterance"]["text"].strip()
                     confirmed_interim_transcripts.append(text)
-                    model_timestamps_confirmed.append(
-                        content["data"]["utterance"]["words"]
-                    )
-                    logger.debug(
-                        "\n"
-                        + "Transcription: "
-                        + content["data"]["utterance"]["text"].strip()
-                    )
+                    model_timestamps_confirmed.append(content["data"]["utterance"]["words"])
+                    logger.debug("\n" + "Transcription: " + content["data"]["utterance"]["text"].strip())
                 if content["type"] == "post_final_transcript":
                     logger.debug("\n################ End of session ################\n")
-                    final_transcript = content["data"]["transcription"][
-                        "full_transcript"
-                    ]
+                    final_transcript = content["data"]["transcription"]["full_transcript"]
 
         async def stop_recording(websocket: ClientConnection) -> None:
             logger.debug(">>>>> Ending the recording…")
@@ -160,9 +154,7 @@ class GladiaApi:
                     logger.debug("\n################ Begin session ################\n")
                     tasks = []
                     tasks.append(asyncio.create_task(send_audio(websocket, data)))
-                    tasks.append(
-                        asyncio.create_task(print_messages_from_socket(websocket))
-                    )
+                    tasks.append(asyncio.create_task(print_messages_from_socket(websocket)))
 
                     await asyncio.wait(tasks)
                 except asyncio.exceptions.CancelledError:
@@ -191,7 +183,7 @@ class GladiaApi:
             audio_cursor_l,
             confirmed_interim_transcripts,
             confirmed_audio_cursor_l,
-            model_timestamps_hypot,
+            model_timestamps_hypothesis,
             model_timestamps_confirmed,
         ) = self.run(sample)
         return {
@@ -200,7 +192,7 @@ class GladiaApi:
             "audio_cursor": audio_cursor_l,
             "confirmed_interim_transcripts": confirmed_interim_transcripts,
             "confirmed_audio_cursor": confirmed_audio_cursor_l,
-            "model_timestamps_hypot": model_timestamps_hypot,
+            "model_timestamps_hypothesis": model_timestamps_hypothesis,
             "model_timestamps_confirmed": model_timestamps_confirmed,
         }
 
@@ -224,16 +216,31 @@ class GladiaStreamingPipeline(Pipeline):
         return audio_data_byte
 
     def parse_output(self, output) -> StreamingTranscriptionOutput:
+        model_timestamps_hypothesis = output["model_timestamps_hypothesis"]
+        model_timestamps_confirmed = output["model_timestamps_confirmed"]
+
+        if model_timestamps_hypothesis is not None:
+            model_timestamps_hypothesis = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_hypothesis
+            ]
+
+        if model_timestamps_confirmed is not None:
+            model_timestamps_confirmed = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_confirmed
+            ]
+
         prediction = StreamingTranscript(
             transcript=output["transcript"],
             audio_cursor=output["audio_cursor"],
             interim_results=output["interim_transcripts"],
             confirmed_audio_cursor=output["confirmed_audio_cursor"],
             confirmed_interim_results=output["confirmed_interim_transcripts"],
-            model_timestamps_hypot=output["model_timestamps_hypot"],
-            model_timestamps_confirmed=output["model_timestamps_confirmed"],
-            prediction_time=None,
+            model_timestamps_hypothesis=model_timestamps_hypothesis,
+            model_timestamps_confirmed=model_timestamps_confirmed,
         )
+
         return StreamingTranscriptionOutput(prediction=prediction)
 
     def build_pipeline(self):

@@ -13,9 +13,11 @@ from pydantic import Field
 
 from sdbench.dataset import StreamingSample
 
-from ...pipeline import Pipeline, PipelineType, register_pipeline
+from ...pipeline import Pipeline, register_pipeline
+from ...pipeline.utils import PipelineType
 from ...pipeline_prediction import StreamingTranscript
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
+
 
 load_dotenv()
 
@@ -53,14 +55,14 @@ class DeepgramApi:
         global interim_transcripts
         global confirmed_audio_cursor_l
         global confirmed_interim_transcripts
-        global model_timestamps_hypot
+        global model_timestamps_hypothesis
         global model_timestamps_confirmed
         audio_cursor = 0.0
         audio_cursor_l = []
         interim_transcripts = []
         confirmed_audio_cursor_l = []
         confirmed_interim_transcripts = []
-        model_timestamps_hypot = []
+        model_timestamps_hypothesis = []
         model_timestamps_confirmed = []
         # Connect to the real-time streaming endpoint, attaching our API key.
         async with websockets.connect(
@@ -102,7 +104,7 @@ class DeepgramApi:
                 global audio_cursor_l
                 global confirmed_interim_transcripts
                 global confirmed_audio_cursor_l
-                global model_timestamps_hypot
+                global model_timestamps_hypothesis
                 global model_timestamps_confirmed
                 transcript = ""
 
@@ -115,14 +117,8 @@ class DeepgramApi:
                         continue
                     if msg["channel"]["alternatives"][0]["transcript"] != "":
                         audio_cursor_l.append(audio_cursor)
-                        model_timestamps_hypot.append(
-                            msg["channel"]["alternatives"][0]["words"]
-                        )
-                        interim_transcripts.append(
-                            transcript
-                            + ""
-                            + msg["channel"]["alternatives"][0]["transcript"]
-                        )
+                        model_timestamps_hypothesis.append(msg["channel"]["alternatives"][0]["words"])
+                        interim_transcripts.append(transcript + "" + msg["channel"]["alternatives"][0]["transcript"])
                         logger.debug(
                             "\n"
                             + "Transcription: "
@@ -132,26 +128,18 @@ class DeepgramApi:
                         )
                         if msg["is_final"]:
                             confirmed_audio_cursor_l.append(audio_cursor)
-                            transcript = (
-                                transcript
-                                + " "
-                                + msg["channel"]["alternatives"][0]["transcript"]
-                            )
+                            transcript = transcript + " " + msg["channel"]["alternatives"][0]["transcript"]
                             confirmed_interim_transcripts.append(transcript)
-                            model_timestamps_confirmed.append(
-                                msg["channel"]["alternatives"][0]["words"]
-                            )
+                            model_timestamps_confirmed.append(msg["channel"]["alternatives"][0]["words"])
 
-            await asyncio.wait(
-                [asyncio.ensure_future(sender(ws)), asyncio.ensure_future(receiver(ws))]
-            )
+            await asyncio.wait([asyncio.ensure_future(sender(ws)), asyncio.ensure_future(receiver(ws))])
             return (
                 transcript,
                 interim_transcripts,
                 audio_cursor_l,
                 confirmed_interim_transcripts,
                 confirmed_audio_cursor_l,
-                model_timestamps_hypot,
+                model_timestamps_hypothesis,
                 model_timestamps_confirmed,
             )
 
@@ -163,12 +151,10 @@ class DeepgramApi:
             audio_cursor_l,
             confirmed_interim_transcripts,
             confirmed_audio_cursor_l,
-            model_timestamps_hypot,
+            model_timestamps_hypothesis,
             model_timestamps_confirmed,
         ) = asyncio.get_event_loop().run_until_complete(
-            self.run(
-                sample, self.api_key, self.channels, self.sample_width, self.sample_rate
-            )
+            self.run(sample, self.api_key, self.channels, self.sample_width, self.sample_rate)
         )
         return {
             "transcript": transcript,
@@ -176,7 +162,7 @@ class DeepgramApi:
             "audio_cursor": audio_cursor_l,
             "confirmed_interim_transcripts": confirmed_interim_transcripts,
             "confirmed_audio_cursor": confirmed_audio_cursor_l,
-            "model_timestamps_hypot": model_timestamps_hypot,
+            "model_timestamps_hypothesis": model_timestamps_hypothesis,
             "model_timestamps_confirmed": model_timestamps_confirmed,
         }
 
@@ -186,9 +172,7 @@ class DeepgramStreamingPipelineConfig(StreamingTranscriptionConfig):
     channels: int
     sample_width: int
     realtime_resolution: float
-    model_version: str = Field(
-        ..., description="The model to use for real-time transcription"
-    )
+    model_version: str = Field(..., description="The model to use for real-time transcription")
 
 
 @register_pipeline
@@ -203,16 +187,31 @@ class DeepgramStreamingPipeline(Pipeline):
         return audio_data_byte
 
     def parse_output(self, output) -> StreamingTranscriptionOutput:
+        model_timestamps_hypothesis = output["model_timestamps_hypothesis"]
+        model_timestamps_confirmed = output["model_timestamps_confirmed"]
+
+        if model_timestamps_hypothesis is not None:
+            model_timestamps_hypothesis = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_hypothesis
+            ]
+
+        if model_timestamps_confirmed is not None:
+            model_timestamps_confirmed = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_confirmed
+            ]
+
         prediction = StreamingTranscript(
             transcript=output["transcript"],
             audio_cursor=output["audio_cursor"],
             interim_results=output["interim_transcripts"],
             confirmed_audio_cursor=output["confirmed_audio_cursor"],
             confirmed_interim_results=output["confirmed_interim_transcripts"],
-            model_timestamps_hypot=output["model_timestamps_hypot"],
-            model_timestamps_confirmed=output["model_timestamps_confirmed"],
-            prediction_time=None,
+            model_timestamps_hypothesis=model_timestamps_hypothesis,
+            model_timestamps_confirmed=model_timestamps_confirmed,
         )
+
         return StreamingTranscriptionOutput(prediction=prediction)
 
     def build_pipeline(self):

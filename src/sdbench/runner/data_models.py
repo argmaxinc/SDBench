@@ -6,7 +6,7 @@ from typing import Generic, TypeVar, Union
 import numpy as np
 from pydantic import BaseModel, Field
 
-from ..pipeline.base import PredictionProtocol
+from ..pipeline.utils import PredictionProtocol
 from ..pipeline_prediction import DiarizationAnnotation, StreamingTranscript, Transcript
 
 
@@ -58,10 +58,13 @@ class DiarizationSampleResult(BaseSampleResult[DiarizationAnnotation]):
     )
 
 
-class TranscriptionSampleResult(
-    BaseSampleResult[Union[Transcript, StreamingTranscript]]
-):
-    """The transcription result for a given sample of a dataset"""
+class TranscriptionSampleResult(BaseSampleResult[Union[Transcript, StreamingTranscript]]):
+    """The transcription result for a given sample of a dataset.
+    This could be associated with the following pipeline types:
+    - Transcription
+    - Streaming Transcription
+    - Orchestration
+    """
 
 
 class TaskResult(BaseModel):
@@ -85,23 +88,15 @@ class GlobalResult(BaseModel):
     dataset_name: str = Field(..., description="The name of the dataset")
     pipeline_name: str = Field(..., description="The name of the pipeline")
     metric_name: str = Field(..., description="The name of the metric")
-    global_result: float | None = Field(
-        ..., description="The global result of the metric"
-    )
+    global_result: float | None = Field(..., description="The global result of the metric")
     detailed_result: dict[str, float | None] = Field(
         None,
         description="The detailed results of the metric i.e. breakdown by its components \
         allowing for more granular analysis",
     )
-    avg_result: float | None = Field(
-        ..., description="The average result of the metric"
-    )
-    upper_bound: float | None = Field(
-        ..., description="The upper bound of the confidence interval"
-    )
-    lower_bound: float | None = Field(
-        ..., description="The lower bound of the confidence interval"
-    )
+    avg_result: float | None = Field(..., description="The average result of the metric")
+    upper_bound: float | None = Field(..., description="The upper bound of the confidence interval")
+    lower_bound: float | None = Field(..., description="The lower bound of the confidence interval")
 
 
 class BenchmarkResult(BaseModel):

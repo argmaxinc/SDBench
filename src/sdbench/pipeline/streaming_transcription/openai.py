@@ -16,9 +16,11 @@ from dotenv import load_dotenv
 
 from sdbench.dataset import StreamingSample
 
+from ...pipeline import Pipeline, register_pipeline
+from ...pipeline.utils import PipelineType
 from ...pipeline_prediction import StreamingTranscript
-from .. import Pipeline, PipelineType, register_pipeline
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
+
 
 load_dotenv()
 
@@ -78,14 +80,10 @@ class OpenAIApi:
                 async with session.post(url, json=payload, headers=headers) as resp:
                     if resp.status != 200:
                         text = await resp.text()
-                        raise Exception(
-                            f"Failed to create transcription session: {resp.status} {text}"
-                        )
+                        raise Exception(f"Failed to create transcription session: {resp.status} {text}")
                     data = await resp.json()
                     ephemeral_token = data["client_secret"]["value"]
-                    logger.debug(
-                        "Transcription session created; ephemeral token obtained."
-                    )
+                    logger.debug("Transcription session created; ephemeral token obtained.")
                     return ephemeral_token
 
         async def send_audio(
@@ -112,16 +110,12 @@ class OpenAIApi:
                     }
 
                     await ws.send(json.dumps(audio_event))
-                    await asyncio.sleep(
-                        self.realtime_resolution
-                    )  # simulate real-time streaming
+                    await asyncio.sleep(self.realtime_resolution)  # simulate real-time streaming
                     audio_cursor += self.realtime_resolution
                 # Wait 1 second to allow any late VAD events before committing.
                 try:
                     await asyncio.wait_for(speech_stopped_event.wait(), timeout=0.5)
-                    logger.debug(
-                        "Speech stopped event received; no manual commit needed."
-                    )
+                    logger.debug("Speech stopped event received; no manual commit needed.")
                 except asyncio.TimeoutError:
                     commit_event = {"type": "input_audio_buffer.commit"}
                     await ws.send(json.dumps(commit_event))
@@ -144,20 +138,14 @@ class OpenAIApi:
                     try:
                         event = json.loads(message)
                         event_type = event.get("type")
-                        if (
-                            event_type
-                            == "conversation.item.input_audio_transcription.delta"
-                        ):
+                        if event_type == "conversation.item.input_audio_transcription.delta":
                             confirmed_audio_cursor_l.append(audio_cursor)
                             delta = event.get("delta", "")
                             logger.debug("Transcription delta: %s", delta)
                             final_transcription += delta
                             confirmed_interim_transcripts.append(final_transcription)
                             logger.debug("\n" + "Transcription: " + final_transcription)
-                        elif (
-                            event_type
-                            == "conversation.item.input_audio_transcription.completed"
-                        ):
+                        elif event_type == "conversation.item.input_audio_transcription.completed":
                             final_transcription = final_transcription + " "
                             if audio_finished:
                                 break  # Exit after final transcription
@@ -181,9 +169,7 @@ class OpenAIApi:
                     "Authorization": f"Bearer {ephemeral_token}",
                     "OpenAI-Beta": "realtime=v1",
                 }
-                async with websockets.connect(
-                    websocket_url, extra_headers=connection_headers
-                ) as ws:
+                async with websockets.connect(websocket_url, extra_headers=connection_headers) as ws:
                     logger.debug("Connected to realtime endpoint.")
 
                     # Step 3: Send transcription session update event with adjusted VAD settings.
@@ -216,12 +202,8 @@ class OpenAIApi:
 
                     byte_rate = self.sample_width * self.sample_rate * self.channels
 
-                    sender_task = asyncio.create_task(
-                        send_audio(ws, data, byte_rate, speech_stopped_event)
-                    )
-                    receiver_task = asyncio.create_task(
-                        receive_events(ws, speech_stopped_event)
-                    )
+                    sender_task = asyncio.create_task(send_audio(ws, data, byte_rate, speech_stopped_event))
+                    receiver_task = asyncio.create_task(receive_events(ws, speech_stopped_event))
 
                     await asyncio.wait_for(
                         asyncio.gather(sender_task, receiver_task),
@@ -252,7 +234,7 @@ class OpenAIApi:
             audio_cursor_l,
             confirmed_interim_transcripts,
             confirmed_audio_cursor_l,
-            model_timestamps_hypot,
+            model_timestamps_hypothesis,
             model_timestamps_confirmed,
         ) = self.run(sample)
         return {
@@ -261,7 +243,7 @@ class OpenAIApi:
             "audio_cursor": audio_cursor_l,
             "confirmed_interim_transcripts": confirmed_interim_transcripts,
             "confirmed_audio_cursor": confirmed_audio_cursor_l,
-            "model_timestamps_hypot": model_timestamps_hypot,
+            "model_timestamps_hypothesis": model_timestamps_hypothesis,
             "model_timestamps_confirmed": model_timestamps_confirmed,
         }
 
@@ -307,9 +289,7 @@ class OpenAIStreamingPipeline(Pipeline):
 
         audio_chunk_bytes = []
         for audio_chunk_tensor in audio_chunk_tensors:
-            audio_chunk_bytes.append(
-                (audio_chunk_tensor * 32768.0).to(torch.int16).numpy().tobytes()
-            )
+            audio_chunk_bytes.append((audio_chunk_tensor * 32768.0).to(torch.int16).numpy().tobytes())
 
         return audio_chunk_bytes
 
@@ -320,16 +300,31 @@ class OpenAIStreamingPipeline(Pipeline):
         return audio_data_byte
 
     def parse_output(self, output) -> StreamingTranscriptionOutput:
+        model_timestamps_hypothesis = output["model_timestamps_hypothesis"]
+        model_timestamps_confirmed = output["model_timestamps_confirmed"]
+
+        if model_timestamps_hypothesis is not None:
+            model_timestamps_hypothesis = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_hypothesis
+            ]
+
+        if model_timestamps_confirmed is not None:
+            model_timestamps_confirmed = [
+                [{"start": word["start"], "end": word["end"]} for word in interim_result_words]
+                for interim_result_words in model_timestamps_confirmed
+            ]
+
         prediction = StreamingTranscript(
             transcript=output["transcript"],
             audio_cursor=output["audio_cursor"],
             interim_results=output["interim_transcripts"],
             confirmed_audio_cursor=output["confirmed_audio_cursor"],
             confirmed_interim_results=output["confirmed_interim_transcripts"],
-            model_timestamps_hypot=output["model_timestamps_hypot"],
-            model_timestamps_confirmed=output["model_timestamps_confirmed"],
-            prediction_time=None,
+            model_timestamps_hypothesis=model_timestamps_hypothesis,
+            model_timestamps_confirmed=model_timestamps_confirmed,
         )
+
         return StreamingTranscriptionOutput(prediction=prediction)
 
     def build_pipeline(self):
