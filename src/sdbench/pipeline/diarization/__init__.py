@@ -5,4 +5,5 @@ from .aws import *
 from .common import *
 from .picovoice import *
 from .pyannote import *
+from .pyannote_api import *
 from .speakerkit import *

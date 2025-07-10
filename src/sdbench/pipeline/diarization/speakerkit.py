@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Callable, TypedDict
 
 from argmaxtools.utils import get_logger
+from pydantic import Field
 
 from ...dataset import DiarizationSample
 from ...pipeline_prediction import DiarizationAnnotation
@@ -23,8 +24,8 @@ TEMP_AUDIO_DIR = Path("audio_temp")
 
 
 class SpeakerKitPipelineConfig(DiarizationPipelineConfig):
-    cli_path: str
-    model_path: str | None = None
+    cli_path: str = Field(..., description="The absolute path to the SpeakerKit CLI")
+    model_path: str | None = Field(None, description="The absolute path to the SpeakerKit model")
 
 
 class SpeakerKitInput(TypedDict):

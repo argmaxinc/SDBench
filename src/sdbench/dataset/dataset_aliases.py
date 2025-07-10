@@ -22,6 +22,15 @@ def register_dataset_aliases() -> None:
     )
 
     DatasetRegistry.register_alias(
+        "callhome_hf",
+        DatasetConfig(dataset_id="talkbank/callhome", split="test", subset="eng", num_samples=1),
+        supported_pipeline_types={
+            PipelineType.DIARIZATION,
+        },
+        description="Talkbank provided Callhome dataset english subset with 1 sample for debugging purposes. Note that this dataset is gated on HF Hub.",
+    )
+
+    DatasetRegistry.register_alias(
         "msdwild",
         DatasetConfig(dataset_id="argmaxinc/msdwild", split="test"),
         supported_pipeline_types={
