@@ -23,7 +23,7 @@ def register_dataset_aliases() -> None:
 
     DatasetRegistry.register_alias(
         "callhome_hf",
-        DatasetConfig(dataset_id="talkbank/callhome", split="test", subset="eng", num_samples=1),
+        DatasetConfig(dataset_id="talkbank/callhome", split="data", subset="eng", num_samples=1),
         supported_pipeline_types={
             PipelineType.DIARIZATION,
         },

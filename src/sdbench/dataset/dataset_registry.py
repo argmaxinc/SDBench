@@ -101,6 +101,11 @@ class DatasetRegistry:
             raise ValueError(f"Unknown dataset alias: {alias}")
         return cls._aliases[alias]
 
+    @classmethod
+    def has_alias(cls, alias: str) -> bool:
+        """Check if a dataset alias exists."""
+        return alias in cls._aliases
+
 
 # Register all datasets
 DatasetRegistry.register(PipelineType.DIARIZATION, DiarizationDataset)

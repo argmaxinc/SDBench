@@ -101,15 +101,6 @@ def validate_dataset_name(dataset_name: str) -> str:
     return dataset_name
 
 
-def validate_metrics(metrics: list[MetricOptions]) -> list[MetricOptions]:
-    """Validate that all metrics exist in MetricOptions."""
-    for metric in metrics:
-        if metric not in MetricOptions:
-            available = ", ".join([m.value for m in MetricOptions])
-            raise typer.BadParameter(f"Metric '{metric.value}' not found. Available metrics: {available}")
-    return metrics
-
-
 def validate_pipeline_dataset_compatibility(pipeline_name: str, dataset_name: str) -> tuple[str, str]:
     """Validate that the pipeline is compatible with the dataset."""
     pipeline_type = PipelineRegistry.get_pipeline_type(pipeline_name)

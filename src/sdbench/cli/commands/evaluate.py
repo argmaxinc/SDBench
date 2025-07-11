@@ -15,7 +15,6 @@ from ..command_utils import (
     get_metrics_help_text,
     get_pipelines_help_text,
     validate_dataset_name,
-    validate_metrics,
     validate_pipeline_dataset_compatibility,
     validate_pipeline_metrics_compatibility,
     validate_pipeline_name,
@@ -42,7 +41,6 @@ def evaluate(
         "--metrics",
         "-m",
         help=f"The metrics to use for evaluation\n\n{get_metrics_help_text()}",
-        callback=validate_metrics,
     ),
     output_dir: str = typer.Option(".", "--output-dir", "-o", help="Output directory for results"),
     ######## WandB arguments ########
