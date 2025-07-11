@@ -99,8 +99,7 @@ class BaseStreamingLatency(BaseMetric):
                 if l == 0:
                     start_timestamp = words[ref_start].start
                 else:
-                    if ((normalizer(interim_results[l - 1]) == ' ') or
-                        (normalizer(interim_results[l]) == ' ')):
+                    if (normalizer(interim_results[l - 1]) == " ") or (normalizer(interim_results[l]) == " "):
                         continue
                     # Find the updated segment
                     out_diff = jiwer.process_words(

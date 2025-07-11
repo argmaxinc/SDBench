@@ -3,7 +3,13 @@
 
 """Evaluate command for sdbench-cli."""
 
+import os
+from pathlib import Path
+from typing import Any
+
+import hydra
 import typer
+from pydantic import BaseModel, Field, model_validator
 
 from sdbench.dataset import DatasetRegistry
 from sdbench.metric import MetricOptions
@@ -21,50 +27,124 @@ from ..command_utils import (
 )
 
 
-def evaluate(
-    pipeline_name: str = typer.Option(
-        ...,
-        "--pipeline",
-        "-p",
-        help=f"The name of the registered pipeline to use for evaluation\n\n{get_pipelines_help_text()}",
-        callback=validate_pipeline_name,
-    ),
-    dataset_name: str = typer.Option(
-        ...,
-        "--dataset",
-        "-d",
-        help=f"The alias of the registered dataset to use for evaluation\n\n{get_datasets_help_text()}",
-        callback=validate_dataset_name,
-    ),
-    metrics: list[MetricOptions] = typer.Option(
-        ...,
-        "--metrics",
-        "-m",
-        help=f"The metrics to use for evaluation\n\n{get_metrics_help_text()}",
-    ),
-    output_dir: str = typer.Option(".", "--output-dir", "-o", help="Output directory for results"),
-    ######## WandB arguments ########
-    use_wandb: bool = typer.Option(False, "--use-wandb", "-w", help="Use W&B for evaluation"),
-    wandb_project: str = typer.Option(
-        "sdbench-eval", "--wandb-project", "-wp", help="W&B project to use for evaluation"
-    ),
-    wandb_run_name: str | None = typer.Option(
-        None, "--wandb-run-name", "-wr", help="W&B run name to use for evaluation"
-    ),
-    wandb_tags: list[str] | None = typer.Option(None, "--wandb-tags", "-wt", help="W&B tags to use for evaluation"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
-) -> None:
-    """Run evaluation benchmarks.
+PipelineConfigOptions = dict[str, dict[str, Any] | dict[str, dict[str, Any]]]
 
-    This command evaluates a pipeline on a dataset using specified metrics.
 
-    Examples:
-        # Evaluate pyannote pipeline on voxconverse dataset with DER and JER metrics
-        sdbench-cli evaluate run --pipeline PyAnnotePipeline --dataset voxconverse --metrics der jer
+class EvaluationConfig(BaseModel):
+    benchmark_config: BenchmarkConfig = Field(..., description="The benchmark config to use for evaluation")
+    pipeline_config: dict[str, dict[str, Any]] = Field(
+        ..., description="The pipeline config to use for evaluation where the key is the pipeline name"
+    )
 
-        # Evaluate with WandB logging
-        sdbench-cli evaluate run --pipeline PyAnnotePipeline --dataset voxconverse --metrics der jer --use-wandb --wandb-project my-project
+    @model_validator(mode="before")
+    @classmethod
+    def validate_pipeline_config(cls, v: dict[str, Any]) -> dict[str, Any]:
+        # Helper to support previous evaluation config .yamls used in previous versions of sdbench
+        # the input for a pipeline_config could be:
+        # - a dict where the key is the pipeline class name and the value is the parameters for the configuration
+        # - a dict where the key is the pipeline class name and the value is a dict with key `config` and value is the parameters for the configuration
+        # For full backward compatibility we should support the case where `pipeline_configs` is passed instead of `pipeline_config`
+        # in the end we should still populate the `pipeline_config` field.
+
+        if isinstance(v, dict):
+            # Handle the case where pipeline_configs is passed instead of pipeline_config
+            if "pipeline_configs" in v and "pipeline_config" not in v:
+                v["pipeline_config"] = v.pop("pipeline_configs")
+
+            # Handle pipeline_config normalization
+            if "pipeline_config" in v:
+                pipeline_config = v["pipeline_config"]
+                if isinstance(pipeline_config, dict):
+                    normalized_config = {}
+                    for pipeline_name, config_value in pipeline_config.items():
+                        if isinstance(config_value, dict) and "config" in config_value:
+                            # Case: {"pipeline_name": {"config": {...}}}
+                            normalized_config[pipeline_name] = config_value["config"]
+                        else:
+                            # Case: {"pipeline_name": {...}}
+                            normalized_config[pipeline_name] = config_value
+                    v["pipeline_config"] = normalized_config
+
+        return v
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+def load_evaluation_config(
+    evaluation_config_path: Path, evaluation_config_overrides: list[str] | None
+) -> EvaluationConfig:
+    """Load an evaluation config from a file.
+    This function uses Hydra to load the evaluation config from a file.
+    It then returns an `EvaluationConfig` object.
+
+    Args:
+        evaluation_config_path: The path to the evaluation config file.
+        evaluation_config_overrides: The overrides to apply to the evaluation config.
     """
+    # Current dir of this file
+    base_dir = Path(__file__).parent
+    # Get dir for config
+    config_dir = evaluation_config_path.absolute().parent
+    # Get config name
+    config_name = evaluation_config_path.stem
+
+    # Get the relative path from the base dir to the config dir
+    relative_config_dir = os.path.relpath(config_dir, start=base_dir)
+
+    # Initialize Hydra with the config path
+    with hydra.initialize(config_path=relative_config_dir):
+        config = hydra.compose(
+            config_name=config_name,
+            overrides=evaluation_config_overrides,
+        )
+
+        return EvaluationConfig(**config)
+
+
+def run_config_file_mode(
+    evaluation_config_path: Path,
+    evaluation_config_overrides: list[str] | None,
+    verbose: bool,
+) -> None:
+    """Run evaluation using a config file."""
+    if verbose:
+        typer.echo("🚀 Starting evaluation with config file...")
+        typer.echo(f"✅ Config file: {evaluation_config_path}")
+        if evaluation_config_overrides:
+            typer.echo(f"✅ Overrides: {evaluation_config_overrides}")
+
+    config = load_evaluation_config(evaluation_config_path, evaluation_config_overrides)
+    benchmark_config = config.benchmark_config
+    pipeline_class_name, pipeline_config = list(config.pipeline_config.items())[0]
+
+    # Create pipeline
+    pipeline = PipelineRegistry.create_pipeline(name=pipeline_class_name, config=pipeline_config)
+    benchmark_runner = BenchmarkRunner(config=benchmark_config, pipelines=[pipeline])
+
+    if verbose:
+        typer.echo(f"✅ Pipeline: {pipeline_class_name}")
+        typer.echo(f"✅ Dataset: {benchmark_config.datasets.keys()}")
+        typer.echo(f"✅ Metrics: {list(benchmark_config.metrics.keys())}")
+        typer.echo(f"✅ WandB: {'enabled' if benchmark_config.wandb_config.is_active else 'disabled'}")
+
+    typer.echo("🚀 Starting evaluation...")
+    _ = benchmark_runner.run()
+    typer.echo("✅ Evaluation completed successfully!")
+
+
+def run_alias_mode(
+    pipeline_name: str,
+    dataset_name: str,
+    metrics: list[MetricOptions],
+    output_dir: str,
+    use_wandb: bool,
+    wandb_project: str,
+    wandb_run_name: str | None,
+    wandb_tags: list[str] | None,
+    verbose: bool,
+) -> None:
+    """Run evaluation using pipeline and dataset aliases."""
     # Validate cross-parameter compatibility
     validate_pipeline_dataset_compatibility(pipeline_name, dataset_name)
     validate_pipeline_metrics_compatibility(pipeline_name, metrics)
@@ -97,8 +177,94 @@ def evaluate(
     # Create runner
     benchmark_runner = BenchmarkRunner(config=benchmark_config, pipelines=[pipeline])
 
-    # TODO: Run the benchmark
     typer.echo("🚀 Starting evaluation...")
-    benchmark_result = benchmark_runner.run()
-    print(benchmark_result)
+    _ = benchmark_runner.run()
     typer.echo("✅ Evaluation completed successfully!")
+
+
+def evaluate(
+    evaluation_config_path: Path | None = typer.Option(
+        None,
+        "--evaluation-config",
+        "-ec",
+        help=(
+            "Path to an evaluation config file for full control over evaluation settings. "
+            "When provided, this overrides all other CLI options. "
+            "The config should define datasets, pipelines, metrics, and W&B settings."
+        ),
+    ),
+    evaluation_config_overrides: list[str] | None = typer.Option(
+        None, "--evaluation-config-overrides", "-eov", help="Hydra overrides to apply to the evaluation config file"
+    ),
+    pipeline_name: str | None = typer.Option(
+        None,
+        "--pipeline",
+        "-p",
+        help=f"The name of the registered pipeline to use for evaluation\n\n{get_pipelines_help_text()}",
+        callback=validate_pipeline_name,
+    ),
+    dataset_name: str | None = typer.Option(
+        None,
+        "--dataset",
+        "-d",
+        help=f"The alias of the registered dataset to use for evaluation\n\n{get_datasets_help_text()}",
+        callback=validate_dataset_name,
+    ),
+    # Metrics don't need validation. Typer validates already since we use the MetricOptions enum
+    metrics: list[MetricOptions] | None = typer.Option(
+        None,
+        "--metrics",
+        "-m",
+        help=f"The metrics to use for evaluation\n\n{get_metrics_help_text()}",
+    ),
+    output_dir: str = typer.Option(".", "--output-dir", "-o", help="Output directory for results"),
+    ######## WandB arguments ########
+    use_wandb: bool = typer.Option(False, "--use-wandb", "-w", help="Use W&B for evaluation"),
+    wandb_project: str = typer.Option(
+        "sdbench-eval", "--wandb-project", "-wp", help="W&B project to use for evaluation"
+    ),
+    wandb_run_name: str | None = typer.Option(
+        None, "--wandb-run-name", "-wr", help="W&B run name to use for evaluation"
+    ),
+    wandb_tags: list[str] | None = typer.Option(None, "--wandb-tags", "-wt", help="W&B tags to use for evaluation"),
+    verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
+) -> None:
+    """Run evaluation benchmarks.
+
+    This command supports two modes:
+
+    1. **Config file mode**: Provide --evaluation-config for full control
+    2. **Alias mode**: Use pre-configured pipeline/dataset aliases with --pipeline, --dataset, --metrics
+
+    Examples:
+        # Config file mode
+        sdbench-cli evaluate --evaluation-config config/my_eval.yaml
+
+        # Alias mode - evaluate pyannote pipeline on voxconverse dataset with DER and JER metrics
+        sdbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer
+    """
+    # Validate mutually exclusive modes
+    if evaluation_config_path is not None:
+        if pipeline_name is not None or dataset_name is not None or metrics is not None:
+            raise typer.BadParameter(
+                "Cannot use --evaluation-config with --pipeline, --dataset, or --metrics. "
+                "Choose either config file mode or alias mode."
+            )
+        run_config_file_mode(evaluation_config_path, evaluation_config_overrides, verbose)
+    else:
+        # Alias mode - validate required parameters
+        if pipeline_name is None or dataset_name is None or metrics is None:
+            raise typer.BadParameter(
+                "Must provide --pipeline, --dataset, and --metrics when not using --evaluation-config"
+            )
+        run_alias_mode(
+            pipeline_name=pipeline_name,
+            dataset_name=dataset_name,
+            metrics=metrics,
+            output_dir=output_dir,
+            use_wandb=use_wandb,
+            wandb_project=wandb_project,
+            wandb_run_name=wandb_run_name,
+            wandb_tags=wandb_tags,
+            verbose=verbose,
+        )

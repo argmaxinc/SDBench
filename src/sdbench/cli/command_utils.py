@@ -83,8 +83,11 @@ def get_datasets_help_text() -> str:
     return help_text
 
 
-def validate_pipeline_name(pipeline_name: str) -> str:
+def validate_pipeline_name(pipeline_name: str | None) -> str:
     """Validate that the pipeline name exists in the registry."""
+    if pipeline_name is None:
+        return None
+
     try:
         PipelineRegistry.get_pipeline_class(pipeline_name)
     except ValueError:
@@ -93,8 +96,11 @@ def validate_pipeline_name(pipeline_name: str) -> str:
     return pipeline_name
 
 
-def validate_dataset_name(dataset_name: str) -> str:
+def validate_dataset_name(dataset_name: str | None) -> str:
     """Validate that the dataset alias exists in the registry."""
+    if dataset_name is None:
+        return None
+
     if not DatasetRegistry.has_alias(dataset_name):
         available = ", ".join(get_available_datasets())
         raise typer.BadParameter(f"Dataset '{dataset_name}' not found. Available datasets: {available}")
