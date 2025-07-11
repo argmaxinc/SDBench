@@ -4,6 +4,7 @@
 """Evaluate command for sdbench-cli."""
 
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -137,7 +138,6 @@ def run_alias_mode(
     pipeline_name: str,
     dataset_name: str,
     metrics: list[MetricOptions],
-    output_dir: str,
     use_wandb: bool,
     wandb_project: str,
     wandb_run_name: str | None,
@@ -154,7 +154,6 @@ def run_alias_mode(
         typer.echo(f"✅ Pipeline: {pipeline_name}")
         typer.echo(f"✅ Dataset: {dataset_name} ({dataset_info.config.dataset_id})")
         typer.echo(f"✅ Metrics: {[m.value for m in metrics]}")
-        typer.echo(f"✅ Output directory: {output_dir}")
         typer.echo(f"✅ WandB: {'enabled' if use_wandb else 'disabled'}")
 
     ######### Build Pipeline #########
@@ -180,6 +179,20 @@ def run_alias_mode(
     typer.echo("🚀 Starting evaluation...")
     _ = benchmark_runner.run()
     typer.echo("✅ Evaluation completed successfully!")
+
+
+BASE_OUTPUT_DIR = Path("outputs")
+
+
+def get_output_dir() -> Path:
+    """Get the output directory for the evaluation."""
+    now_utc = datetime.now()
+    date_str = now_utc.strftime("%Y-%m-%d")
+    time_str = now_utc.strftime("%H-%M-%S")
+
+    output_dir = BASE_OUTPUT_DIR / date_str / time_str
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
 
 
 def evaluate(
@@ -217,7 +230,6 @@ def evaluate(
         "-m",
         help=f"The metrics to use for evaluation\n\n{get_metrics_help_text()}",
     ),
-    output_dir: str = typer.Option(".", "--output-dir", "-o", help="Output directory for results"),
     ######## WandB arguments ########
     use_wandb: bool = typer.Option(False, "--use-wandb", "-w", help="Use W&B for evaluation"),
     wandb_project: str = typer.Option(
@@ -234,37 +246,43 @@ def evaluate(
     This command supports two modes:
 
     1. **Config file mode**: Provide --evaluation-config for full control
+
     2. **Alias mode**: Use pre-configured pipeline/dataset aliases with --pipeline, --dataset, --metrics
 
     Examples:
+
         # Config file mode
+
         sdbench-cli evaluate --evaluation-config config/my_eval.yaml
 
         # Alias mode - evaluate pyannote pipeline on voxconverse dataset with DER and JER metrics
+
         sdbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer
     """
+    if evaluation_config_path is None and (pipeline_name is None or dataset_name is None or metrics is None):
+        raise typer.BadParameter("Must provide either --evaluation-config or --pipeline, --dataset, and --metrics")
+
+    # Get output dir
+    output_dir = get_output_dir()
+    # Tell user which output dir is being used for the run
+    typer.echo(f"🏃 output directory: {output_dir}")
+    # Set output_dir as working dir
+    os.chdir(output_dir)
+
     # Validate mutually exclusive modes
     if evaluation_config_path is not None:
-        if pipeline_name is not None or dataset_name is not None or metrics is not None:
-            raise typer.BadParameter(
-                "Cannot use --evaluation-config with --pipeline, --dataset, or --metrics. "
-                "Choose either config file mode or alias mode."
-            )
+        typer.echo("Running with config file mode")
         run_config_file_mode(evaluation_config_path, evaluation_config_overrides, verbose)
-    else:
-        # Alias mode - validate required parameters
-        if pipeline_name is None or dataset_name is None or metrics is None:
-            raise typer.BadParameter(
-                "Must provide --pipeline, --dataset, and --metrics when not using --evaluation-config"
-            )
-        run_alias_mode(
-            pipeline_name=pipeline_name,
-            dataset_name=dataset_name,
-            metrics=metrics,
-            output_dir=output_dir,
-            use_wandb=use_wandb,
-            wandb_project=wandb_project,
-            wandb_run_name=wandb_run_name,
-            wandb_tags=wandb_tags,
-            verbose=verbose,
-        )
+        return
+
+    typer.echo("Running with alias mode")
+    run_alias_mode(
+        pipeline_name=pipeline_name,
+        dataset_name=dataset_name,
+        metrics=metrics,
+        use_wandb=use_wandb,
+        wandb_project=wandb_project,
+        wandb_run_name=wandb_run_name,
+        wandb_tags=wandb_tags,
+        verbose=verbose,
+    )
