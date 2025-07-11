@@ -4,8 +4,8 @@
 from dataclasses import dataclass
 from typing import Any, ClassVar
 
+from ..types import PipelineType
 from .base import Pipeline
-from .utils import PipelineType
 
 
 @dataclass

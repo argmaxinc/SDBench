@@ -10,8 +10,8 @@ from pyannote.metrics.base import BaseMetric
 from pyannote.metrics.types import Details, MetricComponents
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
-from ...pipeline.base import PipelineType
 from ...pipeline_prediction import StreamingTranscript, Transcript
+from ...types import PipelineType
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 

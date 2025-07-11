@@ -8,7 +8,7 @@ from typing import Any, Callable, Generic, TypeVar
 from pydantic import BaseModel, Field
 
 from ..dataset.dataset_base import BaseSample
-from .utils import PipelineType, PredictionProtocol
+from ..types import PipelineType, PredictionProtocol
 
 
 ParsedInput = TypeVar("ParsedInput")

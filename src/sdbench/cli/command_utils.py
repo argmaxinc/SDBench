@@ -8,7 +8,7 @@ import typer
 from sdbench.dataset import DatasetRegistry
 from sdbench.metric import MetricOptions, MetricRegistry
 from sdbench.pipeline import PipelineRegistry
-from sdbench.pipeline.utils import PipelineType
+from sdbench.types import PipelineType
 
 
 def get_available_pipelines() -> list[str]:

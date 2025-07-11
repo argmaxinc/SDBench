@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from typing import ClassVar
 
-from ..pipeline.utils import PipelineType
+from ..types import PipelineType
 from .dataset_base import BaseDataset, DatasetConfig
 from .dataset_diarization import DiarizationDataset
 from .dataset_orchestration import OrchestrationDataset

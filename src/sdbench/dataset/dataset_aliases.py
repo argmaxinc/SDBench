@@ -3,7 +3,7 @@
 
 """Dataset alias registrations for the CLI."""
 
-from ..pipeline.utils import PipelineType
+from ..types import PipelineType
 from .dataset_base import DatasetConfig
 from .dataset_registry import DatasetRegistry
 
@@ -135,5 +135,4 @@ def register_dataset_aliases() -> None:
     )
 
 
-# Register aliases when module is imported
 register_dataset_aliases()

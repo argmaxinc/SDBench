@@ -11,7 +11,8 @@ from pyannote.metrics.base import BaseMetric
 
 from ..dataset import BaseDataset, BaseSample, DatasetRegistry
 from ..metric import MetricRegistry
-from ..pipeline import Pipeline, PipelineType
+from ..pipeline import Pipeline
+from ..types import PipelineType
 from .config import BenchmarkConfig
 from .data_models import (
     BenchmarkResult,
@@ -320,7 +321,7 @@ class BenchmarkRunner:
                         else [pipeline.__class__.__name__]
                     ),
                     config=wandb_config,
-                ) as run,
+                ),
             ):
                 for dataset_name, dataset_config in self.config.datasets.items():
                     # Use DatasetRegistry to get the appropriate dataset for the pipeline type

@@ -6,8 +6,8 @@ from typing import Generic, TypeVar, Union
 import numpy as np
 from pydantic import BaseModel, Field
 
-from ..pipeline.utils import PredictionProtocol
 from ..pipeline_prediction import DiarizationAnnotation, StreamingTranscript, Transcript
+from ..types import PredictionProtocol
 
 
 Prediction = TypeVar("Prediction", bound=PredictionProtocol)

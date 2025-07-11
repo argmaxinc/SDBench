@@ -46,14 +46,14 @@ def evaluate(
     ),
     output_dir: str = typer.Option(".", "--output-dir", "-o", help="Output directory for results"),
     ######## WandB arguments ########
-    use_wandb: bool = typer.Option(False, "--use-wandb", "-w", help="Use WandB for evaluation"),
+    use_wandb: bool = typer.Option(False, "--use-wandb", "-w", help="Use W&B for evaluation"),
     wandb_project: str = typer.Option(
-        "sdbench-eval", "--wandb-project", "-wp", help="WandB project to use for evaluation"
+        "sdbench-eval", "--wandb-project", "-wp", help="W&B project to use for evaluation"
     ),
     wandb_run_name: str | None = typer.Option(
-        None, "--wandb-run-name", "-wr", help="WandB run name to use for evaluation"
+        None, "--wandb-run-name", "-wr", help="W&B run name to use for evaluation"
     ),
-    wandb_tags: list[str] | None = typer.Option(None, "--wandb-tags", "-wt", help="WandB tags to use for evaluation"),
+    wandb_tags: list[str] | None = typer.Option(None, "--wandb-tags", "-wt", help="W&B tags to use for evaluation"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Enable verbose output"),
 ) -> None:
     """Run evaluation benchmarks.
