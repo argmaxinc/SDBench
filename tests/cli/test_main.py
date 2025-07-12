@@ -19,29 +19,43 @@ def test_cli_help(runner):
     assert "Benchmark suite for speaker diarization" in result.output
 
 
-def test_evaluation_command_help(runner):
-    """Test that the evaluation command shows help."""
-    result = runner.invoke(app, ["evaluation", "--help"])
+def test_evaluate_command_help(runner):
+    """Test that the evaluate command shows help."""
+    result = runner.invoke(app, ["evaluate", "--help"])
     assert result.exit_code == 0
-    assert "Run evaluation benchmarks" in result.output
+    assert "evaluate" in result.output
 
 
 def test_inference_command_help(runner):
     """Test that the inference command shows help."""
     result = runner.invoke(app, ["inference", "--help"])
     assert result.exit_code == 0
-    assert "Run inference on audio files" in result.output
+    assert "inference" in result.output
 
 
-def test_evaluation_command_placeholder(runner):
-    """Test that the evaluation command returns placeholder message."""
-    result = runner.invoke(app, ["evaluation"])
+def test_summary_command_help(runner):
+    """Test that the summary command shows help."""
+    result = runner.invoke(app, ["summary", "--help"])
     assert result.exit_code == 0
-    assert "Evaluation command - implementation pending" in result.output
+    assert "summary" in result.output
 
 
-def test_inference_command_placeholder(runner):
-    """Test that the inference command returns placeholder message."""
+def test_evaluate_command_requires_pipeline(runner):
+    """Test that the evaluate command requires pipeline parameter."""
+    result = runner.invoke(app, ["evaluate"])
+    assert result.exit_code != 0
+    assert "Missing option" in result.output or "Error" in result.output
+
+
+def test_inference_command_requires_pipeline_and_audio(runner):
+    """Test that the inference command requires pipeline and audio parameters."""
     result = runner.invoke(app, ["inference"])
+    assert result.exit_code != 0
+    assert "Missing option" in result.output or "Error" in result.output
+
+
+def test_summary_command_default(runner):
+    """Test that the summary command runs successfully."""
+    result = runner.invoke(app, ["summary"])
     assert result.exit_code == 0
-    assert "Inference command - implementation pending" in result.output
+    assert "SDBench Summary" in result.output
