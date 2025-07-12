@@ -6,17 +6,13 @@ import warnings
 from abc import ABC, abstractmethod
 from typing import Any, Generic, TypeVar
 
-
-# Disable all warnings for this module
-warnings.filterwarnings("ignore")
-
 import numpy as np
 import pandas as pd
 import wandb
 from argmaxtools.utils import get_logger
 
 from ..metric import MetricOptions
-from ..pipeline.utils import PredictionProtocol
+from ..types import PredictionProtocol
 from .data_models import (
     BaseSampleResult,
     DiarizationSampleResult,
@@ -24,6 +20,10 @@ from .data_models import (
     TaskResult,
     TranscriptionSampleResult,
 )
+
+
+# Disable all warnings for this module
+warnings.filterwarnings("ignore")
 
 
 SampleResult = TypeVar("SampleResult", bound=BaseSampleResult)
@@ -116,7 +116,7 @@ class WandbLogger(ABC, Generic[SampleResult]):
             prediction = sample_result.prediction
             sample_id = sample_result.sample_id
             filename = f"_sample_{sample_id}.rttm"
-            prediction_file_path = prediction.to_annotation_file(save_dir, filename)
+            prediction.to_annotation_file(save_dir, filename)
 
         artifact = wandb.Artifact(
             f"{dataset_name}-{pipeline_name}-predictions",

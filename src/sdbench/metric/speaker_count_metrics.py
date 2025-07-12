@@ -7,7 +7,7 @@ from pyannote.core import Annotation
 from pyannote.metrics.base import BaseMetric
 from pyannote.metrics.types import Details, MetricComponents
 
-from ..pipeline.base import PipelineType
+from ..types import PipelineType
 from .metric import MetricOptions
 from .registry import MetricRegistry
 

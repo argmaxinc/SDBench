@@ -9,8 +9,8 @@ from pyannote.metrics.types import Details, MetricComponents
 from pydantic import BaseModel, Field
 from scipy import optimize
 
-from ...pipeline.base import PipelineType
 from ...pipeline_prediction import Transcript
+from ...types import PipelineType
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 from .text_normalizer import EnglishTextNormalizer
@@ -176,7 +176,6 @@ class WordDiarizationErrorRate(BaseWordErrorMetric):
         total_words = 0
         correct_assignments = 0
         num_substitutions_asr = 0
-        num_correct_asr = 0
         num_substitutions_asr_incorrect_speaker = 0  # Sis
         num_correct_asr_incorrect_speaker = 0  # Cis
 

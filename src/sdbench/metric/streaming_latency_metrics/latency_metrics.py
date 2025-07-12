@@ -12,8 +12,8 @@ from pyannote.metrics.base import BaseMetric
 from pyannote.metrics.types import Details, MetricComponents
 from transformers.models.whisper.english_normalizer import BasicTextNormalizer
 
-from ...pipeline.base import PipelineType
 from ...pipeline_prediction import StreamingTranscript, Transcript, Word
+from ...types import PipelineType
 from ..metric import MetricOptions
 from ..registry import MetricRegistry
 
@@ -99,8 +99,7 @@ class BaseStreamingLatency(BaseMetric):
                 if l == 0:
                     start_timestamp = words[ref_start].start
                 else:
-                    if ((normalizer(interim_results[l - 1]) == ' ') or
-                        (normalizer(interim_results[l]) == ' ')):
+                    if (normalizer(interim_results[l - 1]) == " ") or (normalizer(interim_results[l]) == " "):
                         continue
                     # Find the updated segment
                     out_diff = jiwer.process_words(
@@ -118,7 +117,7 @@ class BaseStreamingLatency(BaseMetric):
                         try:
                             start_timestamp = words[actual_idx].start
                         # TODO: Handle Edge Cases
-                        except:
+                        except Exception:
                             continue
                     else:
                         # Current behaviour is when there is no new word,

@@ -35,5 +35,5 @@ dataset_statistics/
 # Wandb sink
 wandb_data/
 
-# Intermediate outputs
-intermediate_outputs/
+# Inference outputs
+inference_outputs/

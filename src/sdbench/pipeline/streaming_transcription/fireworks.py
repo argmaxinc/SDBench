@@ -16,8 +16,8 @@ from dotenv import load_dotenv
 from sdbench.dataset import StreamingSample
 
 from ...pipeline import Pipeline, register_pipeline
-from ...pipeline.utils import PipelineType
 from ...pipeline_prediction import StreamingTranscript
+from ...types import PipelineType
 from .common import StreamingTranscriptionConfig, StreamingTranscriptionOutput
 
 

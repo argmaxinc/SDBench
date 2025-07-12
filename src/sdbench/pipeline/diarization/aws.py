@@ -53,12 +53,8 @@ class AWSTranscribeOutput(BaseModel):
 
 
 class AWSTranscribeConfig(DiarizationPipelineConfig):
-    results_path: str | None = None
     bucket_name: str
     region_name: str
-    max_speakers: int | None = None
-    min_speakers: int | None = None
-    num_speakers: int | None = None
 
 
 class AWSTranscribeAPI:

@@ -136,7 +136,7 @@ class Transcript(BaseModel):
         return path
 
 
-#NOTE: StreamingTranscript is used only as output of pipelines. The reference for streaming transcript is of type Transcript.
+# NOTE: StreamingTranscript is used only as output of pipelines. The reference for streaming transcript is of type Transcript.
 class StreamingTranscript(BaseModel):
     transcript: str = Field(..., description="The final transcript")
     audio_cursor: list[float] | None = Field(None, description="The audio cursor in seconds")
@@ -153,7 +153,7 @@ class StreamingTranscript(BaseModel):
     )
 
     def get_words(self) -> list[str]:
-        return [word for word in self.transcript.split(" ")]
+        return list(self.transcript.split())
 
     def get_speakers(self) -> list[str] | None:
         return None

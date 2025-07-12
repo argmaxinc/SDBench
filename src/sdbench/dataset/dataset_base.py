@@ -12,7 +12,7 @@ from datasets import Dataset as HfDataset
 from datasets import load_dataset
 from pydantic import BaseModel, Field
 
-from ..pipeline.utils import PredictionProtocol
+from ..types import PredictionProtocol
 from .dataset_utils import validate_hf_dataset_schema
 
 

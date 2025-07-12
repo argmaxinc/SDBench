@@ -17,7 +17,7 @@ from pyannote.metrics.diarization import (
     JaccardErrorRate,
 )
 
-from ..pipeline.base import PipelineType
+from ..types import PipelineType
 from .metric import MetricOptions
 
 
