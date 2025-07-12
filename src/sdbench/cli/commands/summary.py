@@ -21,29 +21,51 @@ console = Console()
 def create_pipeline_table() -> Table:
     """Create a table showing available pipelines."""
     table = Table(title="Available Pipelines", show_header=True, header_style="bold magenta")
-    table.add_column("Name", style="cyan", no_wrap=True)
+    table.add_column("Class Name", style="cyan", no_wrap=True)
     table.add_column("Type", style="green")
-    table.add_column("Description", style="white")
-    table.add_column("Default Config", style="yellow")
+    table.add_column("Alias", style="yellow")
+    table.add_column("Alias Description", style="white")
 
     # Get all pipeline names (both class names and aliases)
     pipeline_names = PipelineRegistry.list_pipelines()
 
+    # Group by class name to show aliases together
+    class_to_aliases = {}
     for name in pipeline_names:
         try:
-            pipeline_type = PipelineRegistry.get_pipeline_type(name)
+            if PipelineRegistry.is_alias(name):
+                # Get the class name for this alias
+                alias_info = PipelineRegistry.get_alias_info(name)
+                class_name = alias_info.pipeline_class.__name__
+                if class_name not in class_to_aliases:
+                    class_to_aliases[class_name] = []
+                class_to_aliases[class_name].append((name, alias_info.description or "No description available"))
+            else:
+                # This is a class name, add it with no aliases
+                if name not in class_to_aliases:
+                    class_to_aliases[name] = []
+        except Exception:
+            # Skip pipelines that can't be processed
+            continue
+
+    # Add rows for each class
+    for class_name, aliases in class_to_aliases.items():
+        try:
+            pipeline_type = PipelineRegistry.get_pipeline_type(class_name)
             pipeline_type_str = pipeline_type.name if pipeline_type else "Unknown"
 
-            # Check if it's an alias
-            if PipelineRegistry.is_alias(name):
-                alias_info = PipelineRegistry.get_alias_info(name)
-                description = alias_info.description or "No description available"
-                default_config = "Yes"
+            if aliases:
+                # Show aliases for this class
+                alias_names = [alias[0] for alias in aliases]
+                alias_descriptions = [alias[1] for alias in aliases]
+                alias_str = ", ".join(alias_names)
+                description_str = "; ".join(alias_descriptions)
             else:
-                description = "No description available"
-                default_config = "No"
+                # No aliases for this class
+                alias_str = "-"
+                description_str = "-"
 
-            table.add_row(name, pipeline_type_str, description, default_config)
+            table.add_row(class_name, pipeline_type_str, alias_str, description_str)
         except Exception:
             # Skip pipelines that can't be processed
             continue
@@ -97,6 +119,8 @@ def create_metric_table() -> Table:
         except Exception:
             continue
 
+    # Create list of metric info for sorting
+    metric_info_list = []
     for metric_option in all_metrics:
         try:
             metric_name = metric_option.value
@@ -112,11 +136,29 @@ def create_metric_table() -> Table:
                 except Exception:
                     continue
 
+            # Sort the supported pipeline types for consistent ordering
+            supported_pipeline_types.sort()
             pipeline_types_str = ", ".join(supported_pipeline_types) if supported_pipeline_types else "Unknown"
-            table.add_row(metric_name, description, pipeline_types_str)
+
+            # Store metric info for sorting
+            metric_info_list.append(
+                {
+                    "metric_name": metric_name,
+                    "description": description,
+                    "pipeline_types_str": pipeline_types_str,
+                    "supported_pipeline_types": supported_pipeline_types,
+                }
+            )
         except Exception:
             # Skip metrics that can't be processed
             continue
+
+    # Sort by pipeline types first, then by metric name
+    metric_info_list.sort(key=lambda x: (x["supported_pipeline_types"], x["metric_name"]))
+
+    # Add sorted metrics to table
+    for metric_info in metric_info_list:
+        table.add_row(metric_info["metric_name"], metric_info["description"], metric_info["pipeline_types_str"])
 
     return table
 
@@ -124,15 +166,19 @@ def create_metric_table() -> Table:
 def create_compatibility_table() -> Table:
     """Create a table showing pipeline-dataset compatibility."""
     table = Table(title="Pipeline-Dataset Compatibility", show_header=True, header_style="bold magenta")
-    table.add_column("Pipeline", style="cyan", no_wrap=True)
+    table.add_column("Pipeline Class", style="cyan", no_wrap=True)
     table.add_column("Compatible Datasets", style="green")
     table.add_column("Compatible Metrics", style="yellow")
 
-    # Get all pipeline names
+    # Get all pipeline names and filter to only class names (not aliases)
     pipeline_names = PipelineRegistry.list_pipelines()
     dataset_aliases = DatasetRegistry.list_aliases()
 
     for pipeline_name in pipeline_names:
+        # Skip aliases, only show class names
+        if PipelineRegistry.is_alias(pipeline_name):
+            continue
+
         try:
             pipeline_type = PipelineRegistry.get_pipeline_type(pipeline_name)
 
