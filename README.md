@@ -15,6 +15,7 @@
 `SDBench` is an open-source benchmarking tool for speaker diarization systems. The primary objective is to promote standardized, reproducible, and continuous evaluation of open-source and proprietary speaker diarization systems across on-device and server-side implementations.
 
 Key features include:
+- **Command Line Interface (CLI)**: Easy-to-use CLI for evaluation, inference, and exploration
 - Simple interface to wrap your diarization, ASR, or ASR + diarization system
 - Easily accessible and extensible metrics following `pyannote` standard metric implementations
 - Modular and convenient configuration management through `hydra`
@@ -65,6 +66,105 @@ source .venv/bin/activate  # On macOS/Linux
 # or
 .venv\Scripts\activate     # On Windows
 ```
+</details>
+
+## Command Line Interface (CLI)
+<details>
+<summary> Click to expand </summary>
+
+SDBench provides a powerful command-line interface for easy interaction with the benchmarking framework. The CLI offers three main commands for different use cases:
+
+### Available Commands
+
+#### `evaluate` - Run Benchmark Evaluations
+Run comprehensive evaluations of your pipelines on datasets with configurable metrics.
+
+```bash
+# Evaluate using pipeline and dataset aliases
+sdbench-cli evaluate \
+    --pipeline pyannote \
+    --dataset voxconverse \
+    --metrics der jer \
+    --use-wandb \
+    --wandb-project my-evaluation
+
+# Evaluate using a configuration file
+sdbench-cli evaluate \
+    --evaluation-config config/my_evaluation.yaml \
+    --evaluation-config-overrides wandb.project=my-project
+
+# Get help and see available options
+sdbench-cli evaluate --help
+```
+
+#### `inference` - Run Single Audio Inference
+Test your pipeline on individual audio files for quick validation.
+
+```bash
+# Run inference on a single audio file
+sdbench-cli inference \
+    --pipeline pyannote \
+    --audio-path /path/to/audio.wav
+
+# Run with verbose output
+sdbench-cli inference \
+    --pipeline aws-diarization \
+    --audio-path /path/to/audio.wav \
+    --verbose
+```
+
+#### `summary` - Explore Available Resources
+Get an overview of all available pipelines, datasets, metrics, and their compatibility.
+
+```bash
+# Show everything (default)
+sdbench-cli summary
+
+# Show only pipelines
+sdbench-cli summary --disable-datasets --disable-metrics --disable-compatibility
+
+# Show only compatibility matrix
+sdbench-cli summary --disable-pipelines --disable-datasets --disable-metrics
+
+# Show with detailed help information
+sdbench-cli summary --verbose
+```
+
+### CLI Features
+
+- **Pipeline Aliases**: Use friendly names like `pyannote`, `aws-diarization`, `whisperx` instead of class names
+- **Dataset Aliases**: Access datasets with simple names like `voxconverse`, `earnings21`
+- **Metric Selection**: Choose from available metrics like `der`, `jer`, `wer`
+- **Weights & Biases Integration**: Built-in support for experiment tracking
+- **Configuration Files**: Support for Hydra-based configuration management
+- **Verbose Output**: Detailed logging for debugging and monitoring
+
+### Environment Variables
+
+Some pipelines require specific environment variables to be set:
+
+```bash
+# AWS Transcribe
+export AWS_ACCESS_KEY_ID="your-access-key"
+export AWS_SECRET_ACCESS_KEY="your-secret-key"
+
+# Pyannote API
+export PYANNOTE_API_KEY="your-api-key"
+
+# SpeakerKit (contact speakerkitpro@argmaxinc.com for access)
+export SPEAKERKIT_CLI_PATH="/path/to/speakerkit/cli"
+export SPEAKERKIT_API_KEY="your-api-key"
+
+# Other API-based pipelines
+export PICOVOICE_API_KEY="your-api-key"
+export DEEPGRAM_API_KEY="your-api-key"
+export FIREWORKS_API_KEY="your-api-key"
+export GLADIA_API_KEY="your-api-key"
+export OPENAI_API_KEY="your-api-key"
+```
+
+For more details about pipeline requirements, run `sdbench-cli summary` to see the full list of available pipelines and their descriptions.
+
 </details>
 
 ## Diarization Datasets
@@ -175,7 +275,8 @@ SDBench can be used as a library to evaluate your own diarization, transcription
 from typing import Callable
 
 from sdbench.dataset import DiarizationSample
-from sdbench.pipeline.base import Pipeline, PipelineType, register_pipeline
+from sdbench.types import PipelineType
+from sdbench.pipeline.base import Pipeline, register_pipeline
 from sdbench.pipeline.diarization.common import DiarizationOutput, DiarizationPipelineConfig
 from sdbench.pipeline_prediction import DiarizationAnnotation
 
@@ -224,7 +325,7 @@ num_speakers: null
 
 ### Using Your Pipeline
 
-1. Import your pipeline and create a benchmark configuration:
+The CLI is currently limited to the pre-implemented pipelines in the library. For custom pipelines, you'll need to use the library directly:
 
 ```python
 from sdbench.runner import BenchmarkConfig, BenchmarkRunner, WandbConfig
@@ -350,6 +451,25 @@ config
 ### Running Evaluations with Different Configurations
 
 You can easily customize your evaluation runs using Hydra's override syntax. Here are some common usage patterns:
+
+#### Using the CLI
+
+All Hydra configuration features work with the CLI using `--evaluation-config` and `--evaluation-config-overrides`:
+
+```bash
+# Run evaluation with a specific config file
+sdbench-cli evaluate --evaluation-config config/my_evaluation.yaml
+
+# Override configuration parameters
+sdbench-cli evaluate \
+    --evaluation-config config/my_evaluation.yaml \
+    --evaluation-config-overrides wandb.project=my-project pipeline_configs.MyPipeline.config.threshold=0.7
+
+# See the resulting configuration
+sdbench-cli evaluate --evaluation-config config/my_evaluation.yaml --help
+```
+
+#### Using the evaluation.py script provided in the repo (old-way)
 
 1. **Selecting Specific Pipelines**
 ```bash
