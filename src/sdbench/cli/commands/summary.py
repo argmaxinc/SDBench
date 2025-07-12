@@ -217,10 +217,10 @@ def create_compatibility_table() -> Table:
 
 
 def summary(
-    pipelines: bool = typer.Option(True, "--pipelines", "-p", help="Show available pipelines"),
-    datasets: bool = typer.Option(True, "--datasets", "-d", help="Show available datasets"),
-    metrics: bool = typer.Option(True, "--metrics", "-m", help="Show available metrics"),
-    compatibility: bool = typer.Option(True, "--compatibility", "-c", help="Show compatibility matrix"),
+    disable_pipelines: bool = typer.Option(False, "--disable-pipelines", help="Disable pipelines table"),
+    disable_datasets: bool = typer.Option(False, "--disable-datasets", help="Disable datasets table"),
+    disable_metrics: bool = typer.Option(False, "--disable-metrics", help="Disable metrics table"),
+    disable_compatibility: bool = typer.Option(False, "--disable-compatibility", help="Disable compatibility table"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed information"),
 ) -> None:
     """Show a summary of available pipelines, datasets, and metrics.
@@ -234,26 +234,26 @@ def summary(
         sdbench-cli summary
 
         # Show only pipelines
-        sdbench-cli summary --pipelines --no-datasets --no-metrics --no-compatibility
+        sdbench-cli summary --disable-datasets --disable-metrics --disable-compatibility
 
         # Show only compatibility matrix
-        sdbench-cli summary --no-pipelines --no-datasets --no-metrics --compatibility
+        sdbench-cli summary --disable-pipelines --disable-datasets --disable-metrics
     """
     console.print(Panel.fit(Text("SDBench Summary", style="bold blue"), border_style="blue"))
 
-    if pipelines:
+    if not disable_pipelines:
         console.print()
         console.print(create_pipeline_table())
 
-    if datasets:
+    if not disable_datasets:
         console.print()
         console.print(create_dataset_table())
 
-    if metrics:
+    if not disable_metrics:
         console.print()
         console.print(create_metric_table())
 
-    if compatibility:
+    if not disable_compatibility:
         console.print()
         console.print(create_compatibility_table())
 

@@ -59,3 +59,13 @@ def test_summary_command_default(runner):
     result = runner.invoke(app, ["summary"])
     assert result.exit_code == 0
     assert "SDBench Summary" in result.output
+
+
+def test_summary_command_pipelines_only(runner):
+    """Test that the summary command shows only pipelines when others are disabled."""
+    result = runner.invoke(app, ["summary", "--disable-datasets", "--disable-metrics", "--disable-compatibility"])
+    assert result.exit_code == 0
+    assert "Available Pipelines" in result.output
+    assert "Available Datasets" not in result.output
+    assert "Available Metrics" not in result.output
+    assert "Pipeline-Dataset Compatibility" not in result.output
