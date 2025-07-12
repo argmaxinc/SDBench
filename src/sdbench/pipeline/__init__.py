@@ -10,4 +10,5 @@ from .streaming_transcription import *
 from .transcription import *
 
 # Import pipeline aliases to register them
+# needs to be imported at the end to avoid circular imports
 from . import pipeline_aliases

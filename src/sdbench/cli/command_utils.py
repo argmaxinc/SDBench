@@ -41,17 +41,19 @@ def get_metrics_help_text() -> str:
 
 
 def get_pipelines_help_text() -> str:
-    """Generate help text for pipelines organized by type."""
-    help_text = "Available pipelines by type:\n\n"
+    """Generate help text for pipeline aliases organized by type."""
+    help_text = "Available pipeline aliases by type:\n\n"
 
-    # Group pipelines by type
+    # Group pipeline aliases by type
     pipelines_by_type = {}
     for pipeline_name in get_available_pipelines():
-        pipeline_type = PipelineRegistry.get_pipeline_type(pipeline_name)
-        pipeline_type_name = pipeline_type.name
-        if pipeline_type_name not in pipelines_by_type:
-            pipelines_by_type[pipeline_type_name] = []
-        pipelines_by_type[pipeline_type_name].append(pipeline_name)
+        # Only include aliases, not class names
+        if PipelineRegistry.is_alias(pipeline_name):
+            pipeline_type = PipelineRegistry.get_pipeline_type(pipeline_name)
+            pipeline_type_name = pipeline_type.name
+            if pipeline_type_name not in pipelines_by_type:
+                pipelines_by_type[pipeline_type_name] = []
+            pipelines_by_type[pipeline_type_name].append(pipeline_name)
 
     for pipeline_type, pipelines in pipelines_by_type.items():
         help_text += f"  {pipeline_type}:\n\n"

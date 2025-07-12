@@ -10,6 +10,7 @@ from .dataset_streaming_transcription import StreamingDataset, StreamingSample
 from .dataset_transcription import TranscriptionDataset, TranscriptionSample
 
 # Import dataset aliases to register them
+# needs to be imported at the end to avoid circular imports
 from . import dataset_aliases
 
 

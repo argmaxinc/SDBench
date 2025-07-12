@@ -5,6 +5,7 @@
 
 from .evaluate import evaluate
 from .inference import inference
+from .summary import summary
 
 
-__all__ = ["evaluate", "inference"]
+__all__ = ["evaluate", "inference", "summary"]

@@ -5,7 +5,7 @@
 
 import typer
 
-from .commands import evaluate, inference
+from .commands import evaluate, inference, summary
 
 
 app = typer.Typer(
@@ -17,6 +17,7 @@ app = typer.Typer(
 # Add commands to the app
 app.command()(evaluate)
 app.command()(inference)
+app.command()(summary)
 
 
 def main() -> None:

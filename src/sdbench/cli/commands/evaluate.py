@@ -4,6 +4,7 @@
 """Evaluate command for sdbench-cli."""
 
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -83,24 +84,28 @@ def load_evaluation_config(
         evaluation_config_path: The path to the evaluation config file.
         evaluation_config_overrides: The overrides to apply to the evaluation config.
     """
-    # Current dir of this file
-    base_dir = Path(__file__).parent
-    # Get dir for config
-    config_dir = evaluation_config_path.absolute().parent
-    # Get config name
-    config_name = evaluation_config_path.stem
+    try:
+        # Current dir of this file
+        base_dir = Path(__file__).parent
+        # Get dir for config
+        config_dir = evaluation_config_path.absolute().parent
+        # Get config name
+        config_name = evaluation_config_path.stem
 
-    # Get the relative path from the base dir to the config dir
-    relative_config_dir = os.path.relpath(config_dir, start=base_dir)
+        # Get the relative path from the base dir to the config dir
+        relative_config_dir = os.path.relpath(config_dir, start=base_dir)
 
-    # Initialize Hydra with the config path
-    with hydra.initialize(config_path=relative_config_dir):
-        config = hydra.compose(
-            config_name=config_name,
-            overrides=evaluation_config_overrides,
-        )
+        # Initialize Hydra with the config path
+        with hydra.initialize(config_path=relative_config_dir):
+            config = hydra.compose(
+                config_name=config_name,
+                overrides=evaluation_config_overrides,
+            )
 
-        return EvaluationConfig(**config)
+            return EvaluationConfig(**config)
+    except Exception as e:
+        typer.echo(f"❌ Failed to load evaluation config from {evaluation_config_path}: {e}", err=True)
+        sys.exit(1)
 
 
 def run_config_file_mode(
@@ -115,23 +120,46 @@ def run_config_file_mode(
         if evaluation_config_overrides:
             typer.echo(f"✅ Overrides: {evaluation_config_overrides}")
 
-    config = load_evaluation_config(evaluation_config_path, evaluation_config_overrides)
-    benchmark_config = config.benchmark_config
-    pipeline_class_name, pipeline_config = list(config.pipeline_config.items())[0]
+    try:
+        config = load_evaluation_config(evaluation_config_path, evaluation_config_overrides)
+        benchmark_config = config.benchmark_config
 
-    # Create pipeline
-    pipeline = PipelineRegistry.create_pipeline(name=pipeline_class_name, config=pipeline_config)
-    benchmark_runner = BenchmarkRunner(config=benchmark_config, pipelines=[pipeline])
+        if not config.pipeline_config:
+            typer.echo("❌ No pipeline configuration found in evaluation config", err=True)
+            sys.exit(1)
 
-    if verbose:
-        typer.echo(f"✅ Pipeline: {pipeline_class_name}")
-        typer.echo(f"✅ Dataset: {benchmark_config.datasets.keys()}")
-        typer.echo(f"✅ Metrics: {list(benchmark_config.metrics.keys())}")
-        typer.echo(f"✅ WandB: {'enabled' if benchmark_config.wandb_config.is_active else 'disabled'}")
+        pipeline_class_name, pipeline_config = list(config.pipeline_config.items())[0]
 
-    typer.echo("🚀 Starting evaluation...")
-    _ = benchmark_runner.run()
-    typer.echo("✅ Evaluation completed successfully!")
+        # Create pipeline
+        typer.echo(f"🔧 Creating pipeline: {pipeline_class_name}")
+        pipeline = PipelineRegistry.create_pipeline(name=pipeline_class_name, config=pipeline_config)
+        benchmark_runner = BenchmarkRunner(config=benchmark_config, pipelines=[pipeline])
+
+        if verbose:
+            typer.echo(f"✅ Pipeline: {pipeline_class_name}")
+            typer.echo(f"✅ Datasets: {list(benchmark_config.datasets.keys())}")
+            typer.echo(f"✅ Metrics: {list(benchmark_config.metrics.keys())}")
+            typer.echo(f"✅ WandB: {'enabled' if benchmark_config.wandb_config.is_active else 'disabled'}")
+
+        typer.echo("🚀 Starting evaluation...")
+        result = benchmark_runner.run()
+
+        if result:
+            typer.echo("✅ Evaluation completed successfully!")
+            if verbose:
+                typer.echo(
+                    f"📊 Results saved to: {result.output_dir if hasattr(result, 'output_dir') else 'current directory'}"
+                )
+        else:
+            typer.echo("⚠️  Evaluation completed but no results were returned", err=True)
+
+    except Exception as e:
+        typer.echo(f"❌ Evaluation failed: {e}", err=True)
+        if verbose:
+            import traceback
+
+            typer.echo(f"📋 Full traceback:\n{traceback.format_exc()}", err=True)
+        sys.exit(1)
 
 
 def run_alias_mode(
@@ -145,40 +173,62 @@ def run_alias_mode(
     verbose: bool,
 ) -> None:
     """Run evaluation using pipeline and dataset aliases."""
-    # Validate cross-parameter compatibility
-    validate_pipeline_dataset_compatibility(pipeline_name, dataset_name)
-    validate_pipeline_metrics_compatibility(pipeline_name, metrics)
+    try:
+        # Validate cross-parameter compatibility
+        typer.echo("🔍 Validating configuration...")
+        validate_pipeline_dataset_compatibility(pipeline_name, dataset_name)
+        validate_pipeline_metrics_compatibility(pipeline_name, metrics)
 
-    if verbose:
-        dataset_info = DatasetRegistry.get_alias_info(dataset_name)
-        typer.echo(f"✅ Pipeline: {pipeline_name}")
-        typer.echo(f"✅ Dataset: {dataset_name} ({dataset_info.config.dataset_id})")
-        typer.echo(f"✅ Metrics: {[m.value for m in metrics]}")
-        typer.echo(f"✅ WandB: {'enabled' if use_wandb else 'disabled'}")
+        if verbose:
+            dataset_info = DatasetRegistry.get_alias_info(dataset_name)
+            typer.echo(f"✅ Pipeline: {pipeline_name}")
+            typer.echo(f"✅ Dataset: {dataset_name} ({dataset_info.config.dataset_id})")
+            typer.echo(f"✅ Metrics: {[m.value for m in metrics]}")
+            typer.echo(f"✅ WandB: {'enabled' if use_wandb else 'disabled'}")
 
-    ######### Build Pipeline #########
-    pipeline = PipelineRegistry.create_pipeline(pipeline_name)
+        ######### Build Pipeline #########
+        typer.echo(f"🔧 Creating pipeline: {pipeline_name}")
+        pipeline = PipelineRegistry.create_pipeline(pipeline_name)
 
-    ######### Build Benchmark Config #########
-    dataset_config = DatasetRegistry.get_alias_config(dataset_name)
+        ######### Build Benchmark Config #########
+        typer.echo(f"📊 Loading dataset: {dataset_name}")
+        dataset_config = DatasetRegistry.get_alias_config(dataset_name)
 
-    wandb_config = WandbConfig(
-        project_name=wandb_project,
-        run_name=wandb_run_name,
-        tags=wandb_tags,
-        is_active=use_wandb,
-    )
+        wandb_config = WandbConfig(
+            project_name=wandb_project,
+            run_name=wandb_run_name,
+            tags=wandb_tags,
+            is_active=use_wandb,
+        )
 
-    benchmark_config = BenchmarkConfig(
-        wandb_config=wandb_config, datasets={dataset_name: dataset_config}, metrics={metric: {} for metric in metrics}
-    )
+        benchmark_config = BenchmarkConfig(
+            wandb_config=wandb_config,
+            datasets={dataset_name: dataset_config},
+            metrics={metric: {} for metric in metrics},
+        )
 
-    # Create runner
-    benchmark_runner = BenchmarkRunner(config=benchmark_config, pipelines=[pipeline])
+        # Create runner
+        benchmark_runner = BenchmarkRunner(config=benchmark_config, pipelines=[pipeline])
 
-    typer.echo("🚀 Starting evaluation...")
-    _ = benchmark_runner.run()
-    typer.echo("✅ Evaluation completed successfully!")
+        typer.echo("🚀 Starting evaluation...")
+        result = benchmark_runner.run()
+
+        if result:
+            typer.echo("✅ Evaluation completed successfully!")
+            if verbose:
+                typer.echo(
+                    f"📊 Results saved to: {result.output_dir if hasattr(result, 'output_dir') else 'current directory'}"
+                )
+        else:
+            typer.echo("⚠️  Evaluation completed but no results were returned", err=True)
+
+    except Exception as e:
+        typer.echo(f"❌ Evaluation failed: {e}", err=True)
+        if verbose:
+            import traceback
+
+            typer.echo(f"📋 Full traceback:\n{traceback.format_exc()}", err=True)
+        sys.exit(1)
 
 
 BASE_OUTPUT_DIR = Path("outputs")
@@ -259,30 +309,43 @@ def evaluate(
 
         sdbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer
     """
+    # Validate required parameters
     if evaluation_config_path is None and (pipeline_name is None or dataset_name is None or metrics is None):
-        raise typer.BadParameter("Must provide either --evaluation-config or --pipeline, --dataset, and --metrics")
+        raise typer.BadParameter(
+            "Must provide either --evaluation-config or --pipeline, --dataset, and --metrics\n\n"
+            "Examples:\n"
+            "  sdbench-cli evaluate --evaluation-config config/my_eval.yaml\n"
+            "  sdbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer"
+        )
 
     # Get output dir
     output_dir = get_output_dir()
     # Tell user which output dir is being used for the run
-    typer.echo(f"🏃 output directory: {output_dir}")
-    # Set output_dir as working dir
-    os.chdir(output_dir)
+    typer.echo(f"📁 Output directory: {output_dir}")
 
-    # Validate mutually exclusive modes
-    if evaluation_config_path is not None:
-        typer.echo("Running with config file mode")
-        run_config_file_mode(evaluation_config_path, evaluation_config_overrides, verbose)
-        return
+    # Store original working directory
+    original_cwd = os.getcwd()
 
-    typer.echo("Running with alias mode")
-    run_alias_mode(
-        pipeline_name=pipeline_name,
-        dataset_name=dataset_name,
-        metrics=metrics,
-        use_wandb=use_wandb,
-        wandb_project=wandb_project,
-        wandb_run_name=wandb_run_name,
-        wandb_tags=wandb_tags,
-        verbose=verbose,
-    )
+    try:
+        # Set output_dir as working dir
+        os.chdir(output_dir)
+
+        # Validate mutually exclusive modes
+        if evaluation_config_path is not None:
+            typer.echo("🔧 Running with config file mode")
+            run_config_file_mode(evaluation_config_path, evaluation_config_overrides, verbose)
+        else:
+            typer.echo("🔧 Running with alias mode")
+            run_alias_mode(
+                pipeline_name=pipeline_name,
+                dataset_name=dataset_name,
+                metrics=metrics,
+                use_wandb=use_wandb,
+                wandb_project=wandb_project,
+                wandb_run_name=wandb_run_name,
+                wandb_tags=wandb_tags,
+                verbose=verbose,
+            )
+    finally:
+        # Restore original working directory
+        os.chdir(original_cwd)

@@ -31,6 +31,8 @@ dependencies = [
     "python-dotenv>=1.0.0,<2",
     "websocket-client>=1.8.0,<2",
     "typer>=0.16.0",
+    "pydub>=0.25.1,<0.26",
+    "rich>=13.0.0,<14",
 ]
 
 [project.scripts]
@@ -42,7 +44,6 @@ dataset = [
     "lxml>=5.3.0,<6",
     "textgrid>=1.6.1,<2",
     "kaggle>=1.6.17,<2",
-    "pydub>=0.25.1,<0.26",
     "transformers>=4.48.2,<5",
     "ego4d>=1.7.3,<2",
 ]
