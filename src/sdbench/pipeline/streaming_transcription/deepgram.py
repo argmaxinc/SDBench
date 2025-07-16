@@ -117,19 +117,26 @@ class DeepgramApi:
                         # There is no transcript in it.
                         continue
                     if msg["channel"]["alternatives"][0]["transcript"] != "":
-                        audio_cursor_l.append(audio_cursor)
-                        model_timestamps_hypothesis.append(msg["channel"]["alternatives"][0]["words"])
-                        interim_transcripts.append(transcript + "" + msg["channel"]["alternatives"][0]["transcript"])
-                        logger.debug(
-                            "\n"
-                            + "Transcription: "
-                            + transcript
-                            + ""
-                            + msg["channel"]["alternatives"][0]["transcript"]
-                        )
-                        if msg["is_final"]:
+                        if not msg["is_final"]:
+                            audio_cursor_l.append(audio_cursor)
+                            model_timestamps_hypothesis.append(msg["channel"]["alternatives"][0]["words"])
+                            interim_transcripts.append(transcript + " " + msg["channel"]["alternatives"][0]["transcript"])
+                            logger.debug(
+                                "\n"
+                                + "Transcription: "
+                                + transcript
+                                + msg["channel"]["alternatives"][0]["transcript"]
+                            )
+
+                        elif msg["is_final"] and (not msg["from_finalize"]):
                             confirmed_audio_cursor_l.append(audio_cursor)
                             transcript = transcript + " " + msg["channel"]["alternatives"][0]["transcript"]
+                            confirmed_interim_transcripts.append(transcript)
+                            model_timestamps_confirmed.append(msg["channel"]["alternatives"][0]["words"])
+  
+                        elif msg["is_final"] and msg["from_finalize"]:
+                            confirmed_audio_cursor_l.append(audio_cursor)
+                            transcript = msg["channel"]["alternatives"][0]["transcript"]
                             confirmed_interim_transcripts.append(transcript)
                             model_timestamps_confirmed.append(msg["channel"]["alternatives"][0]["words"])
 
