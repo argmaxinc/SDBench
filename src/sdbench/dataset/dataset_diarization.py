@@ -1,9 +1,9 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-from typing import TypedDict
-
+# Importing from typing_extensions is required for Python <3.12 to use TypedDict with pydantic
 from pyannote.core import Segment, Timeline
+from typing_extensions import TypedDict
 
 from ..pipeline_prediction import DiarizationAnnotation
 from .dataset_base import BaseDataset, BaseSample
