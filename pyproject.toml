@@ -42,7 +42,11 @@ dataset = [
     "transformers>=4.48.2,<5",
     "ego4d>=1.7.3,<2",
 ]
-dev = ["pytest>=8.3.5,<9"]
+dev = [
+    "ipykernel>=6.29.5",
+    "pytest>=8.3.5,<9",
+    "seaborn>=0.13.2",
+]
 
 
 [build-system]
