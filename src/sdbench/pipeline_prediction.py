@@ -87,9 +87,9 @@ class Transcript(BaseModel):
     def from_words_info(
         cls,
         words: list[str],
-        start: list[float] | None,
-        end: list[float] | None,
-        speaker: list[str] | None,
+        start: list[float] | None = None,
+        end: list[float] | None = None,
+        speaker: list[str] | None = None,
     ) -> "Transcript":
         if start is None:
             start = [None] * len(words)

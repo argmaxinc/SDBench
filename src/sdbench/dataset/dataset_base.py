@@ -34,6 +34,7 @@ class DatasetConfig(BaseModel):
     )
 
     def load(self) -> HfDataset:
+        # TODO: Add support for streaming datasets
         ds = load_dataset(self.dataset_id, self.subset, split=self.split)
         if self.num_samples is not None:
             ds = ds.take(self.num_samples)
@@ -67,6 +68,7 @@ class BaseSample(BaseModel, Generic[ReferenceType, ExtraInfoType]):
         arbitrary_types_allowed = True
 
 
+# TODO: Add support for datasets from local files
 class BaseDataset(ABC, Generic[SampleType]):
     """Base class for all dataset types with common functionality."""
 

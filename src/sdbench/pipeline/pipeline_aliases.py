@@ -22,6 +22,10 @@ from .streaming_transcription import (
     GladiaStreamingPipeline,
     OpenAIStreamingPipeline,
 )
+from .transcription import (
+    SpeechAnalyzerPipeline,
+    WhisperKitPipeline,
+)
 
 
 def register_pipeline_aliases() -> None:
@@ -101,6 +105,50 @@ def register_pipeline_aliases() -> None:
             "threads": 8,
         },
         description="WhisperX diarized transcription pipeline from https://github.com/m-bain/whisperX",
+    )
+
+    ################# TRANSCRIPTION PIPELINES #################
+
+    PipelineRegistry.register_alias(
+        "whisperkit-tiny",
+        WhisperKitPipeline,
+        default_config={
+            "model_version": "tiny",
+            "word_timestamps": True,
+            "chunking_strategy": "vad",
+        },
+        description="WhisperKit transcription pipeline (open-source version) using the tiny version of the model. Requires Swift and Xcode installed.",
+    )
+
+    PipelineRegistry.register_alias(
+        "whisperkit-large-v3",
+        WhisperKitPipeline,
+        default_config={
+            "model_version": "large-v3",
+            "word_timestamps": True,
+            "chunking_strategy": "vad",
+        },
+        description="WhisperKit transcription pipeline (open-source version) using the large-v3 version of the model. Requires Swift and Xcode installed.",
+    )
+
+    PipelineRegistry.register_alias(
+        "whisperkit-large-v3-turbo",
+        WhisperKitPipeline,
+        default_config={
+            "model_version": "large-v3-v20240930",
+            "word_timestamps": True,
+            "chunking_strategy": "vad",
+        },
+        description="WhisperKit transcription pipeline (open-source version) using the large-v3-v20240930 version of the model (which is the same as large-v3-turbo from OpenAI). Requires Swift and Xcode installed.",
+    )
+
+    PipelineRegistry.register_alias(
+        "speech-analyzer",
+        SpeechAnalyzerPipeline,
+        default_config={
+            "clone_dir": "./speech_analyzer_repo",
+        },
+        description="Speech Analyzer transcription pipeline (open-source version). Requires Swift and Xcode installed.",
     )
 
     ################# STREAMING TRANSCRIPTION PIPELINES #################
