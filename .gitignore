@@ -37,3 +37,6 @@ wandb_data/
 
 # Inference outputs
 inference_outputs/
+
+# Miscellaneous
+miscellaneous/
