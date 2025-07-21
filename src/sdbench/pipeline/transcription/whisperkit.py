@@ -25,7 +25,7 @@ TEMP_AUDIO_DIR = Path("./temp_audio")
 WHISPERKIT_DEFAULT_REPORT_PATH = "./whisperkit_report"
 
 
-class WhisperKitPipelineConfig(TranscriptionConfig):
+class WhisperKitTranscriptionConfig(TranscriptionConfig):
     """Configuration for WhisperKit transcription operations."""
 
     model_version: str = Field(
@@ -139,7 +139,7 @@ class WhisperKitEngine:
     def __init__(
         self,
         config: WhisperKitEngineConfig,
-        transcription_config: WhisperKitPipelineConfig,
+        transcription_config: WhisperKitTranscriptionConfig,
     ):
         self.config = config
         self.cli_path = config.cli_path or self._clone_and_build_cli()
@@ -239,8 +239,8 @@ class WhisperKitEngine:
 
 
 @register_pipeline
-class WhisperKitPipeline(Pipeline):
-    _config_class = WhisperKitPipelineConfig
+class WhisperKitTranscriptionPipeline(Pipeline):
+    _config_class = WhisperKitTranscriptionConfig
     pipeline_type = PipelineType.TRANSCRIPTION
 
     def build_pipeline(self) -> Callable[[TranscriptionCliInput], TranscriptionCliOutput]:

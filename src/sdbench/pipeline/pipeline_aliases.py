@@ -24,7 +24,7 @@ from .streaming_transcription import (
 )
 from .transcription import (
     SpeechAnalyzerPipeline,
-    WhisperKitPipeline,
+    WhisperKitTranscriptionPipeline,
 )
 
 
@@ -111,7 +111,7 @@ def register_pipeline_aliases() -> None:
 
     PipelineRegistry.register_alias(
         "whisperkit-tiny",
-        WhisperKitPipeline,
+        WhisperKitTranscriptionPipeline,
         default_config={
             "model_version": "tiny",
             "word_timestamps": True,
@@ -122,7 +122,7 @@ def register_pipeline_aliases() -> None:
 
     PipelineRegistry.register_alias(
         "whisperkit-large-v3",
-        WhisperKitPipeline,
+        WhisperKitTranscriptionPipeline,
         default_config={
             "model_version": "large-v3",
             "word_timestamps": True,
@@ -133,7 +133,7 @@ def register_pipeline_aliases() -> None:
 
     PipelineRegistry.register_alias(
         "whisperkit-large-v3-turbo",
-        WhisperKitPipeline,
+        WhisperKitTranscriptionPipeline,
         default_config={
             "model_version": "large-v3-v20240930",
             "word_timestamps": True,
