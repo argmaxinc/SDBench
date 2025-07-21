@@ -3,16 +3,15 @@
 
 import warnings
 
-
-warnings.filterwarnings("ignore")
-
 import hydra
 from argmaxtools.utils import get_logger
 from omegaconf import OmegaConf
 
-from sdbench.pipeline import PIPELINE_REGISTRY
-from sdbench.runner import BenchmarkConfig, BenchmarkRunner
+from openbench.pipeline import PIPELINE_REGISTRY
+from openbench.runner import BenchmarkConfig, BenchmarkRunner
 
+
+warnings.filterwarnings("ignore")
 
 logger = get_logger(__name__)
 
@@ -27,7 +26,7 @@ def main(config: OmegaConf) -> None:
         for pipeline_name, pipeline_config in config.pipeline_configs.items()
     ]
     runner = BenchmarkRunner(benchmark_config, pipelines)
-    benchmark_result = runner.run()
+    _ = runner.run()
 
 
 if __name__ == "__main__":

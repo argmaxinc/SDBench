@@ -105,10 +105,10 @@ class PyAnnotePipeline(Pipeline):
     def parse_input(self, input_sample: DiarizationSample) -> dict[str, torch.FloatTensor | int]:
         waveform = torch.from_numpy(input_sample.waveform).float().unsqueeze(0)
         waveform = waveform.to(self.config.device)
-        parsed_input = dict(
-            waveform=waveform,
-            sample_rate=input_sample.sample_rate,
-        )
+        parsed_input = {
+            "waveform": waveform,
+            "sample_rate": input_sample.sample_rate,
+        }
         if self.config.use_oracle_clustering or self.config.use_oracle_segmentation:
             parsed_input["annotation"] = input_sample.annotation
         return parsed_input

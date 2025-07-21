@@ -2095,6 +2095,101 @@ wheels = [
 ]
 
 [[package]]
+name = "openbench"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "argmaxtools" },
+    { name = "black" },
+    { name = "boto3" },
+    { name = "datasets" },
+    { name = "hdbscan" },
+    { name = "hydra-core" },
+    { name = "jiwer" },
+    { name = "kaleido" },
+    { name = "librosa" },
+    { name = "llvmlite" },
+    { name = "numba" },
+    { name = "plotly" },
+    { name = "pvfalcon" },
+    { name = "pyannote-audio" },
+    { name = "pydantic" },
+    { name = "pydub" },
+    { name = "python-dotenv" },
+    { name = "rich" },
+    { name = "scikit-learn" },
+    { name = "speechbrain" },
+    { name = "torch" },
+    { name = "typer" },
+    { name = "umap-learn" },
+    { name = "wandb" },
+    { name = "websocket-client" },
+    { name = "websockets" },
+    { name = "whisperx" },
+]
+
+[package.dev-dependencies]
+dataset = [
+    { name = "ego4d" },
+    { name = "gdown" },
+    { name = "kaggle" },
+    { name = "lxml" },
+    { name = "textgrid" },
+    { name = "transformers" },
+]
+dev = [
+    { name = "ipykernel" },
+    { name = "pytest" },
+    { name = "seaborn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "argmaxtools", specifier = ">=0.1.14,<0.2" },
+    { name = "black", specifier = ">=24.10.0,<25" },
+    { name = "boto3", specifier = ">=1.36.20,<2" },
+    { name = "datasets", specifier = ">=3.1.0,<4" },
+    { name = "hdbscan", specifier = ">=0.8.40,<0.9" },
+    { name = "hydra-core", specifier = ">=1.3.2,<2" },
+    { name = "jiwer", specifier = ">=3.1.0,<4" },
+    { name = "kaleido", specifier = "==0.2.1" },
+    { name = "librosa", specifier = ">=0.10.2.post1,<0.11" },
+    { name = "llvmlite", specifier = "==0.43.0" },
+    { name = "numba", specifier = "~=0.60.0" },
+    { name = "plotly", specifier = ">=5.24.1,<6" },
+    { name = "pvfalcon", specifier = ">=1.0.4,<2" },
+    { name = "pyannote-audio", specifier = ">=3.3.2,<4" },
+    { name = "pydantic", specifier = ">=2.9.2,<3" },
+    { name = "pydub", specifier = ">=0.25.1,<0.26" },
+    { name = "python-dotenv", specifier = ">=1.0.0,<2" },
+    { name = "rich", specifier = ">=13.0.0,<14" },
+    { name = "scikit-learn", specifier = "==1.5.1" },
+    { name = "speechbrain", specifier = "==1.0.2" },
+    { name = "torch", specifier = "==2.6.0" },
+    { name = "typer", specifier = ">=0.16.0" },
+    { name = "umap-learn", specifier = ">=0.5.7,<0.6" },
+    { name = "wandb", specifier = ">=0.19.0,<0.20" },
+    { name = "websocket-client", specifier = ">=1.8.0,<2" },
+    { name = "websockets", specifier = ">=10.1,<11" },
+    { name = "whisperx", specifier = ">=3.3.1,<4" },
+]
+
+[package.metadata.requires-dev]
+dataset = [
+    { name = "ego4d", specifier = ">=1.7.3,<2" },
+    { name = "gdown", specifier = ">=5.2.0,<6" },
+    { name = "kaggle", specifier = ">=1.6.17,<2" },
+    { name = "lxml", specifier = ">=5.3.0,<6" },
+    { name = "textgrid", specifier = ">=1.6.1,<2" },
+    { name = "transformers", specifier = ">=4.48.2,<5" },
+]
+dev = [
+    { name = "ipykernel", specifier = ">=6.29.5" },
+    { name = "pytest", specifier = ">=8.3.5,<9" },
+    { name = "seaborn", specifier = ">=0.13.2" },
+]
+
+[[package]]
 name = "optuna"
 version = "4.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -3272,101 +3367,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/73/5cbe4a3fd4bc3e2d67ffad02c88b83edc88f381b73ab982f48f3df1a7790/scipy-1.16.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:512c4f4f85912767c351a0306824ccca6fd91307a9f4318efe8fdbd9d30562ef", size = 35389070, upload-time = "2025-06-22T16:19:37.387Z" },
     { url = "https://files.pythonhosted.org/packages/86/e8/a60da80ab9ed68b31ea5a9c6dfd3c2f199347429f229bf7f939a90d96383/scipy-1.16.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:e69f798847e9add03d512eaf5081a9a5c9a98757d12e52e6186ed9681247a1ac", size = 37825287, upload-time = "2025-06-22T16:19:43.375Z" },
     { url = "https://files.pythonhosted.org/packages/ea/b5/29fece1a74c6a94247f8a6fb93f5b28b533338e9c34fdcc9cfe7a939a767/scipy-1.16.0-cp312-cp312-win_amd64.whl", hash = "sha256:adf9b1999323ba335adc5d1dc7add4781cb5a4b0ef1e98b79768c05c796c4e49", size = 38431929, upload-time = "2025-06-22T16:19:49.385Z" },
-]
-
-[[package]]
-name = "sdbench"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "argmaxtools" },
-    { name = "black" },
-    { name = "boto3" },
-    { name = "datasets" },
-    { name = "hdbscan" },
-    { name = "hydra-core" },
-    { name = "jiwer" },
-    { name = "kaleido" },
-    { name = "librosa" },
-    { name = "llvmlite" },
-    { name = "numba" },
-    { name = "plotly" },
-    { name = "pvfalcon" },
-    { name = "pyannote-audio" },
-    { name = "pydantic" },
-    { name = "pydub" },
-    { name = "python-dotenv" },
-    { name = "rich" },
-    { name = "scikit-learn" },
-    { name = "speechbrain" },
-    { name = "torch" },
-    { name = "typer" },
-    { name = "umap-learn" },
-    { name = "wandb" },
-    { name = "websocket-client" },
-    { name = "websockets" },
-    { name = "whisperx" },
-]
-
-[package.dev-dependencies]
-dataset = [
-    { name = "ego4d" },
-    { name = "gdown" },
-    { name = "kaggle" },
-    { name = "lxml" },
-    { name = "textgrid" },
-    { name = "transformers" },
-]
-dev = [
-    { name = "ipykernel" },
-    { name = "pytest" },
-    { name = "seaborn" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "argmaxtools", specifier = ">=0.1.14,<0.2" },
-    { name = "black", specifier = ">=24.10.0,<25" },
-    { name = "boto3", specifier = ">=1.36.20,<2" },
-    { name = "datasets", specifier = ">=3.1.0,<4" },
-    { name = "hdbscan", specifier = ">=0.8.40,<0.9" },
-    { name = "hydra-core", specifier = ">=1.3.2,<2" },
-    { name = "jiwer", specifier = ">=3.1.0,<4" },
-    { name = "kaleido", specifier = "==0.2.1" },
-    { name = "librosa", specifier = ">=0.10.2.post1,<0.11" },
-    { name = "llvmlite", specifier = "==0.43.0" },
-    { name = "numba", specifier = "~=0.60.0" },
-    { name = "plotly", specifier = ">=5.24.1,<6" },
-    { name = "pvfalcon", specifier = ">=1.0.4,<2" },
-    { name = "pyannote-audio", specifier = ">=3.3.2,<4" },
-    { name = "pydantic", specifier = ">=2.9.2,<3" },
-    { name = "pydub", specifier = ">=0.25.1,<0.26" },
-    { name = "python-dotenv", specifier = ">=1.0.0,<2" },
-    { name = "rich", specifier = ">=13.0.0,<14" },
-    { name = "scikit-learn", specifier = "==1.5.1" },
-    { name = "speechbrain", specifier = "==1.0.2" },
-    { name = "torch", specifier = "==2.6.0" },
-    { name = "typer", specifier = ">=0.16.0" },
-    { name = "umap-learn", specifier = ">=0.5.7,<0.6" },
-    { name = "wandb", specifier = ">=0.19.0,<0.20" },
-    { name = "websocket-client", specifier = ">=1.8.0,<2" },
-    { name = "websockets", specifier = ">=10.1,<11" },
-    { name = "whisperx", specifier = ">=3.3.1,<4" },
-]
-
-[package.metadata.requires-dev]
-dataset = [
-    { name = "ego4d", specifier = ">=1.7.3,<2" },
-    { name = "gdown", specifier = ">=5.2.0,<6" },
-    { name = "kaggle", specifier = ">=1.6.17,<2" },
-    { name = "lxml", specifier = ">=5.3.0,<6" },
-    { name = "textgrid", specifier = ">=1.6.1,<2" },
-    { name = "transformers", specifier = ">=4.48.2,<5" },
-]
-dev = [
-    { name = "ipykernel", specifier = ">=6.29.5" },
-    { name = "pytest", specifier = ">=8.3.5,<9" },
-    { name = "seaborn", specifier = ">=0.13.2" },
 ]
 
 [[package]]

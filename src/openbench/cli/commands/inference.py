@@ -1,7 +1,7 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-"""Inference command for sdbench-cli."""
+"""Inference command for openbench-cli."""
 
 import sys
 from pathlib import Path
@@ -10,10 +10,10 @@ import numpy as np
 import typer
 from pydub import AudioSegment
 
-from sdbench.dataset import DiarizationSample, OrchestrationSample, StreamingSample, TranscriptionSample
-from sdbench.pipeline import PipelineRegistry
-from sdbench.pipeline_prediction import DiarizationAnnotation, Transcript
-from sdbench.types import PipelineType
+from openbench.dataset import DiarizationSample, OrchestrationSample, StreamingSample, TranscriptionSample
+from openbench.pipeline import PipelineRegistry
+from openbench.pipeline_prediction import DiarizationAnnotation, Transcript
+from openbench.types import PipelineType
 
 from ..command_utils import get_pipelines_help_text, validate_pipeline_name
 

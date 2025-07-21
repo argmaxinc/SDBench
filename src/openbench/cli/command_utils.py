@@ -1,14 +1,14 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-"""Shared utilities for CLI commands."""
+"""Common utilities for CLI commands."""
 
 import typer
 
-from sdbench.dataset import DatasetRegistry
-from sdbench.metric import MetricOptions, MetricRegistry
-from sdbench.pipeline import PipelineRegistry
-from sdbench.types import PipelineType
+from openbench.dataset import DatasetRegistry
+from openbench.metric import MetricOptions, MetricRegistry
+from openbench.pipeline import PipelineRegistry
+from openbench.types import PipelineType
 
 
 def get_available_pipelines() -> list[str]:

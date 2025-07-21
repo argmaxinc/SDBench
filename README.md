@@ -1,18 +1,18 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/sdbench-light.png">
   <source media="(prefers-color-scheme: light)" srcset="assets/sdbench-dark.png">
-  <img alt="SDBench Logo" src="assets/sdbench-light.png">
+  <img alt="OpenBench Logo" src="assets/sdbench-light.png">
 </picture>
 
-[![Paper](https://img.shields.io/badge/Paper-📄-blue)](http://argmaxinc.com/sdbench-paper)
+[![Paper](https://img.shields.io/badge/Paper-📄-blue)](http://argmaxinc.com/openbench-paper)
 [![Discord](https://img.shields.io/discord/1171912382512115722?style=flat&logo=discord&logoColor=969da4&label=Discord&labelColor=353a41&color=32d058&link=https%3A%2F%2Fdiscord.gg%2FG5F5GZGecC)](https://discord.gg/G5F5GZGecC)
 
 > [!NOTE]
-> The SDBench code is licensed under the MIT License. However, please note that:
+> The OpenBench code is licensed under the MIT License. However, please note that:
 > - SpeakerKit CLI and other integrated systems have their own licenses that apply
 > - The datasets used in this benchmark have their own licenses and usage restrictions (see [Diarization Datasets](#diarization-datasets) section for details)
 
-`SDBench` is an open-source benchmarking tool for speaker diarization systems. The primary objective is to promote standardized, reproducible, and continuous evaluation of open-source and proprietary speaker diarization systems across on-device and server-side implementations.
+`OpenBench` is an open-source benchmarking tool for speaker diarization systems. The primary objective is to promote standardized, reproducible, and continuous evaluation of open-source and proprietary speaker diarization systems across on-device and server-side implementations.
 
 Key features include:
 - **Command Line Interface (CLI)**: Easy-to-use CLI for evaluation, inference, and exploration
@@ -72,7 +72,7 @@ source .venv/bin/activate  # On macOS/Linux
 <details>
 <summary> Click to expand </summary>
 
-SDBench provides a powerful command-line interface for easy interaction with the benchmarking framework. The CLI offers three main commands for different use cases:
+OpenBench provides a powerful command-line interface for easy interaction with the benchmarking framework. The CLI offers three main commands for different use cases:
 
 ### Available Commands
 
@@ -81,7 +81,7 @@ Run comprehensive evaluations of your pipelines on datasets with configurable me
 
 ```bash
 # Evaluate using pipeline and dataset aliases
-sdbench-cli evaluate \
+openbench-cli evaluate \
     --pipeline pyannote \
     --dataset voxconverse \
     --metrics der jer \
@@ -89,12 +89,12 @@ sdbench-cli evaluate \
     --wandb-project my-evaluation
 
 # Evaluate using a configuration file
-sdbench-cli evaluate \
+openbench-cli evaluate \
     --evaluation-config config/my_evaluation.yaml \
     --evaluation-config-overrides wandb.project=my-project
 
 # Get help and see available options
-sdbench-cli evaluate --help
+openbench-cli evaluate --help
 ```
 
 #### `inference` - Run Single Audio Inference
@@ -102,32 +102,33 @@ Test your pipeline on individual audio files for quick validation.
 
 ```bash
 # Run inference on a single audio file
-sdbench-cli inference \
+openbench-cli inference \
     --pipeline pyannote \
-    --audio-path /path/to/audio.wav
+    --audio-path path/to/audio.wav \
+    --output-path path/to/output.json
 
-# Run with verbose output
-sdbench-cli inference \
-    --pipeline aws-diarization \
-    --audio-path /path/to/audio.wav \
-    --verbose
+# Run inference with custom configuration
+openbench-cli inference \
+    --pipeline pyannote \
+    --audio-path path/to/audio.wav \
+    --pipeline-config '{"min_speakers": 2, "max_speakers": 5}'
 ```
 
 #### `summary` - Explore Available Resources
 Get an overview of all available pipelines, datasets, metrics, and their compatibility.
 
 ```bash
-# Show everything (default)
-sdbench-cli summary
+# Show all available pipelines, datasets, and metrics
+openbench-cli summary
 
 # Show only pipelines
-sdbench-cli summary --disable-datasets --disable-metrics --disable-compatibility
+openbench-cli summary --disable-datasets --disable-metrics --disable-compatibility
 
 # Show only compatibility matrix
-sdbench-cli summary --disable-pipelines --disable-datasets --disable-metrics
+openbench-cli summary --disable-pipelines --disable-datasets --disable-metrics
 
-# Show with detailed help information
-sdbench-cli summary --verbose
+# Get detailed information
+openbench-cli summary --verbose
 ```
 
 ### CLI Features
@@ -163,7 +164,7 @@ export GLADIA_API_KEY="your-api-key"
 export OPENAI_API_KEY="your-api-key"
 ```
 
-For more details about pipeline requirements, run `sdbench-cli summary` to see the full list of available pipelines and their descriptions.
+For more details about pipeline requirements, run `openbench-cli summary` to see the full list of available pipelines and their descriptions.
 
 </details>
 
@@ -261,7 +262,7 @@ make download-datasets
 <details>
 <summary> Click to expand </summary>
 
-SDBench can be used as a library to evaluate your own diarization, transcription, or orchestration pipelines. The framework supports three types of pipelines:
+OpenBench can be used as a library to evaluate your own diarization, transcription, or orchestration pipelines. The framework supports three types of pipelines:
 
 1. **Diarization Pipeline**: For speaker diarization tasks
 2. **Transcription Pipeline**: For ASR/transcription tasks
@@ -274,11 +275,11 @@ SDBench can be used as a library to evaluate your own diarization, transcription
 ```python
 from typing import Callable
 
-from sdbench.dataset import DiarizationSample
-from sdbench.types import PipelineType
-from sdbench.pipeline.base import Pipeline, register_pipeline
-from sdbench.pipeline.diarization.common import DiarizationOutput, DiarizationPipelineConfig
-from sdbench.pipeline_prediction import DiarizationAnnotation
+from openbench.dataset import DiarizationSample
+from openbench.types import PipelineType
+from openbench.pipeline.base import Pipeline, register_pipeline
+from openbench.pipeline.diarization.common import DiarizationOutput, DiarizationPipelineConfig
+from openbench.pipeline_prediction import DiarizationAnnotation
 
 @register_pipeline
 class MyDiarizationPipeline(Pipeline):
@@ -305,7 +306,7 @@ class MyDiarizationPipeline(Pipeline):
 
 ```python
 from pydantic import Field
-from sdbench.pipeline.diarization.common import DiarizationPipelineConfig
+from openbench.pipeline.diarization.common import DiarizationPipelineConfig
 
 class MyDiarizationConfig(DiarizationPipelineConfig):
     model_path: str = Field(..., description="Path to model weights")
@@ -328,9 +329,9 @@ num_speakers: null
 The CLI is currently limited to the pre-implemented pipelines in the library. For custom pipelines, you'll need to use the library directly:
 
 ```python
-from sdbench.runner import BenchmarkConfig, BenchmarkRunner, WandbConfig
-from sdbench.metric import MetricOptions
-from sdbench.dataset import DiarizationDatasetConfig
+from openbench.runner import BenchmarkConfig, BenchmarkRunner, WandbConfig
+from openbench.metric import MetricOptions
+from openbench.dataset import DiarizationDatasetConfig
 
 from my_pipeline import MyDiarizationPipeline, MyDiarizationConfig
 
@@ -458,15 +459,15 @@ All Hydra configuration features work with the CLI using `--evaluation-config` a
 
 ```bash
 # Run evaluation with a specific config file
-sdbench-cli evaluate --evaluation-config config/my_evaluation.yaml
+openbench-cli evaluate --evaluation-config config/my_evaluation.yaml
 
 # Override configuration parameters
-sdbench-cli evaluate \
+openbench-cli evaluate \
     --evaluation-config config/my_evaluation.yaml \
     --evaluation-config-overrides wandb.project=my-project pipeline_configs.MyPipeline.config.threshold=0.7
 
 # See the resulting configuration
-sdbench-cli evaluate --evaluation-config config/my_evaluation.yaml --help
+openbench-cli evaluate --evaluation-config config/my_evaluation.yaml --help
 ```
 
 #### Using the evaluation.py script provided in the repo (old-way)

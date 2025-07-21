@@ -5,7 +5,7 @@
 
 from .oracle_diarizer import OracleSpeakerDiarization
 from .oracle_inference import OracleSegmenterInference
-from .pipeline import *
+from .pipeline import PyAnnotePipeline, PyAnnotePipelineConfig
 
 
 __all__ = [

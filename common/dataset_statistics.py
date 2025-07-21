@@ -14,7 +14,7 @@ from pyannote.core import Segment
 from tqdm import tqdm
 from transformers import WhisperForConditionalGeneration, WhisperProcessor
 
-from sdbench.dataset import DiarizationDataset, DiarizationSample
+from openbench.dataset import DiarizationDataset, DiarizationSample
 
 
 logger = get_logger(__name__)

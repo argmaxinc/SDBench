@@ -26,7 +26,7 @@ class OracleSegmenterInference(Inference):
         window: Text = "sliding",
         duration: Optional[float] = None,
         step: Optional[float] = None,
-        pre_aggregation_hook: Callable[[np.ndarray], np.ndarray] = None,
+        pre_aggregation_hook: Callable[[np.ndarray], np.ndarray] | None = None,
         skip_aggregation: bool = False,
         skip_conversion: bool = False,
         device: Optional[torch.device] = None,

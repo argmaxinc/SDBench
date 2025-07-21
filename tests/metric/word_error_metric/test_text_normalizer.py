@@ -3,7 +3,7 @@
 
 import unittest
 
-from sdbench.metric.word_error_metrics.text_normalizer import EnglishTextNormalizer
+from openbench.metric.word_error_metrics.text_normalizer import EnglishTextNormalizer
 
 
 class TestTextNormalizer(unittest.TestCase):

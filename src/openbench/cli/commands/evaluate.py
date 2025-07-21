@@ -1,7 +1,7 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-"""Evaluate command for sdbench-cli."""
+"""Evaluate command for openbench-cli."""
 
 import os
 import sys
@@ -13,10 +13,10 @@ import hydra
 import typer
 from pydantic import BaseModel, Field, model_validator
 
-from sdbench.dataset import DatasetRegistry
-from sdbench.metric import MetricOptions
-from sdbench.pipeline import PipelineRegistry
-from sdbench.runner import BenchmarkConfig, BenchmarkRunner, WandbConfig
+from openbench.dataset import DatasetRegistry
+from openbench.metric import MetricOptions
+from openbench.pipeline import PipelineRegistry
+from openbench.runner import BenchmarkConfig, BenchmarkRunner, WandbConfig
 
 from ..command_utils import (
     get_datasets_help_text,
@@ -41,7 +41,7 @@ class EvaluationConfig(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def validate_pipeline_config(cls, v: dict[str, Any]) -> dict[str, Any]:
-        # Helper to support previous evaluation config .yamls used in previous versions of sdbench
+        # Helper to support previous evaluation config .yamls used in previous versions of openbench
         # the input for a pipeline_config could be:
         # - a dict where the key is the pipeline class name and the value is the parameters for the configuration
         # - a dict where the key is the pipeline class name and the value is a dict with key `config` and value is the parameters for the configuration
@@ -283,7 +283,7 @@ def evaluate(
     ######## WandB arguments ########
     use_wandb: bool = typer.Option(False, "--use-wandb", "-w", help="Use W&B for evaluation"),
     wandb_project: str = typer.Option(
-        "sdbench-eval", "--wandb-project", "-wp", help="W&B project to use for evaluation"
+        "openbench-eval", "--wandb-project", "-wp", help="W&B project to use for evaluation"
     ),
     wandb_run_name: str | None = typer.Option(
         None, "--wandb-run-name", "-wr", help="W&B run name to use for evaluation"
@@ -303,19 +303,19 @@ def evaluate(
 
         # Config file mode
 
-        sdbench-cli evaluate --evaluation-config config/my_eval.yaml
+        openbench-cli evaluate --evaluation-config config/my_eval.yaml
 
         # Alias mode - evaluate pyannote pipeline on voxconverse dataset with DER and JER metrics
 
-        sdbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer
+        openbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer
     """
     # Validate required parameters
     if evaluation_config_path is None and (pipeline_name is None or dataset_name is None or metrics is None):
         raise typer.BadParameter(
             "Must provide either --evaluation-config or --pipeline, --dataset, and --metrics\n\n"
             "Examples:\n"
-            "  sdbench-cli evaluate --evaluation-config config/my_eval.yaml\n"
-            "  sdbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer"
+            "  openbench-cli evaluate --evaluation-config config/my_eval.yaml\n"
+            "  openbench-cli evaluate --pipeline pyannote --dataset voxconverse --metrics der jer"
         )
 
     # Get output dir

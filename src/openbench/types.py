@@ -1,7 +1,7 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-"""Shared types used across the sdbench package."""
+"""Shared types used across the openbench package."""
 
 from enum import Enum, auto
 from typing import Protocol, runtime_checkable

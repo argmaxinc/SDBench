@@ -1,5 +1,5 @@
 [project]
-name = "sdbench"
+name = "openbench"
 version = "0.1.0"
 description = "Benchmark suite for speaker diarization"
 authors = [{ name = "Argmax Inc.", email = "info@takeargmax.com" }]
@@ -36,7 +36,7 @@ dependencies = [
 ]
 
 [project.scripts]
-sdbench-cli = "sdbench.cli.main:main"
+openbench-cli = "openbench.cli.main:main"
 
 [dependency-groups]
 dataset = [
@@ -78,7 +78,7 @@ select = ["C", "E", "F", "I", "W", "RUF013"]
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
-known-first-party = ["sdbench"]
+known-first-party = ["openbench"]
 
 [tool.ruff.format]
 # Like Black, use double quotes for strings.

@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from websockets.client import ClientConnection, connect
 from websockets.exceptions import ConnectionClosedOK
 
-from sdbench.dataset import StreamingSample
+from openbench.dataset import StreamingSample
 
 from ...pipeline import Pipeline, register_pipeline
 from ...pipeline_prediction import StreamingTranscript

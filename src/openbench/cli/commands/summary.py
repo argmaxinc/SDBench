@@ -1,7 +1,7 @@
 # For licensing see accompanying LICENSE.md file.
 # Copyright (C) 2025 Argmax, Inc. All Rights Reserved.
 
-"""Summary command for sdbench-cli."""
+"""Summary command for openbench-cli."""
 
 import typer
 from rich.console import Console
@@ -9,10 +9,10 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
-from sdbench.dataset import DatasetRegistry
-from sdbench.metric import MetricRegistry
-from sdbench.pipeline import PipelineRegistry
-from sdbench.types import PipelineType
+from openbench.dataset import DatasetRegistry
+from openbench.metric import MetricRegistry
+from openbench.pipeline import PipelineRegistry
+from openbench.types import PipelineType
 
 
 console = Console()
@@ -225,21 +225,17 @@ def summary(
 ) -> None:
     """Show a summary of available pipelines, datasets, and metrics.
 
-    This command provides an overview of what's available in SDBench,
-    including compatibility information between pipelines, datasets, and metrics.
+    This command provides an overview of what's available in OpenBench,
+    including datasets, metrics, and pipelines. It's useful for exploring
+    the available options and understanding the framework's capabilities.
 
     Examples:
-
-        # Show everything (default)
-        sdbench-cli summary
-
-        # Show only pipelines
-        sdbench-cli summary --disable-datasets --disable-metrics --disable-compatibility
-
-        # Show only compatibility matrix
-        sdbench-cli summary --disable-pipelines --disable-datasets --disable-metrics
+        openbench-cli summary
+        openbench-cli summary --verbose
+        openbench-cli summary --disable-datasets --disable-metrics --disable-compatibility
+        openbench-cli summary --disable-pipelines --disable-datasets --disable-metrics
     """
-    console.print(Panel.fit(Text("SDBench Summary", style="bold blue"), border_style="blue"))
+    console.print(Panel.fit(Text("OpenBench Summary", style="bold blue"), border_style="blue"))
 
     if not disable_pipelines:
         console.print()
@@ -264,9 +260,9 @@ def summary(
                 Text(
                     "💡 Tip: Use --help with any command to see detailed usage information\n"
                     "📖 Examples:\n"
-                    "  sdbench-cli evaluate --help\n"
-                    "  sdbench-cli inference --help\n"
-                    "  sdbench-cli summary --help",
+                    "  openbench-cli evaluate --help\n"
+                    "  openbench-cli inference --help\n"
+                    "  openbench-cli summary --help",
                     style="dim",
                 ),
                 title="💡 Help & Tips",

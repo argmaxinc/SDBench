@@ -3,5 +3,4 @@
 
 """Shared utilities for pipeline implementations."""
 
-# PipelineType and PredictionProtocol have been moved to sdbench.types
-# to avoid circular imports
+# PipelineType and PredictionProtocol have been moved to openbench.types

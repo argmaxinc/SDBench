@@ -13,7 +13,7 @@ import websocket
 from argmaxtools.utils import get_logger
 from dotenv import load_dotenv
 
-from sdbench.dataset import StreamingSample
+from openbench.dataset import StreamingSample
 
 from ...pipeline import Pipeline, register_pipeline
 from ...pipeline_prediction import StreamingTranscript

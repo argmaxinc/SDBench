@@ -260,7 +260,7 @@ class PyannoteApiPipeline(Pipeline):
         audio_path = input_sample.save_audio(TEMP_AUDIO_DIR)
         # setting as attribute to remove after parsing output
         self._audio_path = audio_path
-        return dict(audio_path=str(audio_path))
+        return {"audio_path": str(audio_path)}
 
     def parse_output(self, output: PyannoteApiOutput) -> DiarizationOutput:
         output = DiarizationOutput(

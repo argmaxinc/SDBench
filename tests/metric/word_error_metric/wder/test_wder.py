@@ -8,8 +8,8 @@ import unittest
 
 from argmaxtools.utils import get_logger
 
-from sdbench.metric import WordDiarizationErrorRate
-from sdbench.pipeline_prediction import Transcript
+from openbench.metric import WordDiarizationErrorRate
+from openbench.pipeline_prediction import Transcript
 
 
 logger = get_logger(__name__)
