@@ -226,8 +226,8 @@ def summary(
     """Show a summary of available pipelines, datasets, and metrics.
 
     This command provides an overview of what's available in OpenBench,
-    including datasets, metrics, and pipelines. It's useful for exploring
-    the available options and understanding the framework's capabilities.
+    including datasets, metrics, and pipelines for speech processing systems.
+    It's useful for exploring the available options and understanding the framework's capabilities.
 
     Examples:
         openbench-cli summary

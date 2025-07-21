@@ -17,7 +17,7 @@ from openbench.cli.commands import evaluate, inference, summary
 
 app = typer.Typer(
     name="openbench-cli",
-    help="OpenBench CLI for benchmarking speaker diarization, transcription, and orchestration systems",
+    help="OpenBench CLI for benchmarking speech processing systems (diarization, transcription, orchestration)",
     add_completion=False,
 )
 

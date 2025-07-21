@@ -1,7 +1,7 @@
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/sdbench-light.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/sdbench-dark.png">
-  <img alt="OpenBench Logo" src="assets/sdbench-light.png">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/openbench-light.png">
+  <source media="(prefers-color-scheme: light)" srcset="assets/openbench-dark.png">
+  <img alt="OpenBench Logo" src="assets/openbench-light.png">
 </picture>
 
 [![Paper](https://img.shields.io/badge/Paper-📄-blue)](http://argmaxinc.com/openbench-paper)
@@ -12,7 +12,18 @@
 > - SpeakerKit CLI and other integrated systems have their own licenses that apply
 > - The datasets used in this benchmark have their own licenses and usage restrictions (see [Diarization Datasets](#diarization-datasets) section for details)
 
-`OpenBench` is an open-source benchmarking tool for speaker diarization systems. The primary objective is to promote standardized, reproducible, and continuous evaluation of open-source and proprietary speaker diarization systems across on-device and server-side implementations.
+> [!IMPORTANT]
+> **OpenBench** is the evolution of **SDBench**, originally introduced in the paper *"SDBench: A Comprehensive Benchmark Suite for Speaker Diarization"*. While SDBench focused specifically on speaker diarization, OpenBench has expanded to encompass a broader range of speech processing tasks and is designed to accommodate future modalities beyond speech.
+
+`OpenBench` is an open-source benchmarking framework for speech processing systems. Originally focused on speaker diarization (as SDBench), the framework has evolved to support comprehensive evaluation of:
+
+- **Speaker Diarization**: Identifying "who spoke when" in audio recordings
+- **Speech Transcription**: Converting speech to text (ASR)
+- **Orchestration**: Combined diarization and transcription systems
+- **Streaming Transcription**: Real-time speech-to-text
+- **Future Extensions**: Designed to accommodate additional speech tasks and potentially other modalities
+
+The primary objective is to promote standardized, reproducible, and continuous evaluation of open-source and proprietary speech processing systems across on-device and server-side implementations.
 
 Key features include:
 - **Command Line Interface (CLI)**: Easy-to-use CLI for evaluation, inference, and exploration
