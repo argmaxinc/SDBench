@@ -37,7 +37,7 @@ Key features include:
 > Want to add your own diarization, ASR, or combined pipeline? Check out our [Adding a New Diarization Pipeline](#adding-a-new-diarization-pipeline) section for a step-by-step guide!
 
 > [!IMPORTANT]
-> Before getting started, please note that some datasets in our [Diarization Datasets](#diarization-datasets) section require special access or have license restrictions. While we provide dataset preparation utilities in `common/download_dataset`, you'll need to procure the raw data independently for these datasets. See the dataset table for details on access requirements.
+> Before getting started, please note that some datasets in our [Datasets](#datasets) section require special access or have license restrictions. While we provide dataset preparation utilities in `common/download_dataset`, you'll need to procure the raw data independently for these datasets. See the dataset table for details on access requirements.
 
 ## 🚀 Roadmap
 
@@ -179,9 +179,13 @@ For more details about pipeline requirements, run `openbench-cli summary` to see
 
 </details>
 
-## Diarization Datasets
+## Datasets
 <details>
 <summary> Click to expand </summary>
+
+OpenBench supports different types of pipelines (Diarization, Transcription, Orchestration, and Streaming Transcription) with specific dataset schemas for each task type.
+
+### Diarization Datasets
 
 The benchmark suite uses several speaker diarization datasets that are stored on the HuggingFace Hub. You can find all the datasets used in our evaluation in this [collection](https://huggingface.co/collections/argmaxinc/diarization-datasets-67646304c9b5e2cf9720ec48). The datasets available in the aforementioned collection are:
 
@@ -201,14 +205,23 @@ The benchmark suite uses several speaker diarization datasets that are stored on
 | [callhome](https://catalog.ldc.upenn.edu/LDC2001S97) | ❌ | [LDC License Agreement](https://catalog.ldc.upenn.edu/license/ldc-non-members-agreement.pdf) | Request access to LDC and use `common/download_dataset.py` script to parse |
 | [ego-4d](https://ego4d-data.org/docs/start-here/) | ❌ | [Ego4D License Agreement](https://ego4ddataset.com/ego4d-license/) | Request access to Ego4D and use `common/download_dataset.py` script to parse |
 
+### Additional Dataset Collections
+
+For other pipeline types, additional dataset collections are available:
+
+- **[Transcription Datasets](https://huggingface.co/collections/argmaxinc/speech-to-text-datasets-687e885d80f794ec4b15d66d)**: Speech-to-text datasets compatible with transcription pipelines
+- **[Orchestration Datasets](https://huggingface.co/collections/argmaxinc/diarized-speech-to-text-datasets-687fb17472f844e89a9ce98a)**: Diarized speech-to-text datasets for orchestration pipelines
 
 From these datasets `voxconverse` and `ami` are not present as download options as they were already present in the HuggingFace Hub uploaded by [diarizers-community](https://huggingface.co/diarizers-community).
 
-### Dataset Schema
+**Note**: You can use `openbench-cli summary` to see all available pre-registered datasets and their compatibility with different pipeline types.
 
-The benchmark suite supports different types of pipelines (`Diarization`, `ASR`, and `Orchestration`) with varying schema requirements. All datasets must follow a base schema, with additional fields required for specific pipeline types.
+### Dataset Schemas
 
-#### Base Schema (Required for all pipelines)
+OpenBench supports different pipeline types, each requiring specific dataset schemas:
+
+#### Diarization Pipeline Schema
+**Required columns:**
 - `audio`: Audio column containing:
   - `array`: Audio waveform as numpy array of shape `(n_samples,)`
   - `sampling_rate`: Sample rate as integer
@@ -216,27 +229,47 @@ The benchmark suite supports different types of pipelines (`Diarization`, `ASR`,
 - `timestamps_end`: List of `float` containing end timestamps of segments in seconds
 - `speakers`: List of `str` containing speaker IDs for each segment
 
-#### Additional Fields for Specific Pipeline Types
+**Optional columns:**
+- `uem_timestamps`: List of tuples `[(start, end), ...]` containing Universal Evaluation Map (UEM) timestamps for evaluation
 
-##### Diarization Pipeline
-- `uem_timestamps`: Optional list of tuples `[(start, end), ...]` containing Universal Evaluation Map (UEM) timestamps for evaluation
-
-##### ASR Pipeline
+#### Transcription Pipeline Schema
+**Required columns:**
+- `audio`: Audio column containing:
+  - `array`: Audio waveform as numpy array of shape `(n_samples,)`
+  - `sampling_rate`: Sample rate as integer
 - `transcript`: List of strings containing the words in the transcript
-- `word_timestamps`: Optional list of tuples `[(start, end), ...]` containing timestamps for each word
-- `word_speakers`: Optional list of strings containing speaker IDs for each word
 
-##### Orchestration Pipeline (Combined Diarization + ASR)
-- All fields from both Diarization and ASR pipelines are required
-- `word_speakers` must be provided if `word_timestamps` is present
-- Length of `word_speakers` must match length of `transcript`
-- Length of `word_timestamps` must match length of `transcript`
+**Optional columns:**
+- `word_timestamps_start`: List of `float` containing start timestamps for each word in seconds
+- `word_timestamps_end`: List of `float` containing end timestamps for each word in seconds
 
-##### Validation Rules
-- For ASR and Orchestration pipelines, if word-level information is provided:
-  - `word_speakers` and `transcript` must have the same length
-  - `word_timestamps` and `transcript` must have the same length
-  - If `word_timestamps` is provided, `word_speakers` must also be provided
+#### Orchestration Pipeline Schema
+**Required columns:**
+- `audio`: Audio column containing:
+  - `array`: Audio waveform as numpy array of shape `(n_samples,)`
+  - `sampling_rate`: Sample rate as integer
+- `transcript`: List of strings containing the words in the transcript
+- `word_speakers`: List of strings containing speaker IDs for each word
+
+**Optional columns:**
+- `word_timestamps_start`: List of `float` containing start timestamps for each word in seconds
+- `word_timestamps_end`: List of `float` containing end timestamps for each word in seconds
+
+**Validation rules:**
+- `word_speakers` and `transcript` must have the same length
+- If `word_timestamps_start` and `word_timestamps_end` are provided, they must have the same length as `transcript`
+
+#### Streaming Transcription Pipeline Schema
+**Required columns:**
+- `audio`: Audio column containing:
+  - `array`: Audio waveform as numpy array of shape `(n_samples,)`
+  - `sampling_rate`: Sample rate as integer
+- `text`: String containing the reference transcript
+
+**Optional columns:**
+- `word_detail`: List of dictionaries containing word-level information with `start` and `stop` timestamps in samples (will be converted to seconds)
+
+**Note**: Currently, most available datasets are optimized for diarization tasks. For transcription, orchestration, and streaming transcription pipelines, you may need to prepare additional annotations or use datasets that include the required fields for each task type.
 
 ### Downloading Datasets
 
@@ -268,7 +301,7 @@ make download-datasets
 
 </details>
 
-## Adding a New Diarization Pipeline
+## Adding a New Pipeline
 
 <details>
 <summary> Click to expand </summary>
