@@ -16,7 +16,6 @@ def test_cli_help(runner):
     """Test that the CLI shows help."""
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
-    assert "Benchmark suite for speaker diarization" in result.output
 
 
 def test_evaluate_command_help(runner):

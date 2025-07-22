@@ -3,21 +3,14 @@
 
 """Main CLI entry point for openbench-cli."""
 
-import sys
-from pathlib import Path
-
 import typer
-
-
-# Add the src directory to the Python path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from openbench.cli.commands import evaluate, inference, summary
 
 
 app = typer.Typer(
     name="openbench-cli",
-    help="OpenBench CLI for benchmarking speech processing systems (diarization, transcription, orchestration)",
+    help="OpenBench CLI for benchmarking, currently supports transcription, diarization, diarized-transcripts (aka orchestration) and realtime-transcription",
     add_completion=False,
 )
 

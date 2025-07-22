@@ -95,7 +95,8 @@ Run comprehensive evaluations of your pipelines on datasets with configurable me
 openbench-cli evaluate \
     --pipeline pyannote \
     --dataset voxconverse \
-    --metrics der jer \
+    --metrics der \
+    --metrics jer \
     --use-wandb \
     --wandb-project my-evaluation
 
