@@ -84,7 +84,7 @@ Run comprehensive evaluations of your pipelines on datasets with configurable me
 sdbench-cli evaluate \
     --pipeline pyannote \
     --dataset voxconverse \
-    --metrics der jer \
+    --metrics der -m jer \
     --use-wandb \
     --wandb-project my-evaluation
 
