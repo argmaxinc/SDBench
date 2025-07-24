@@ -4,7 +4,7 @@
   <img alt="OpenBench Logo" src="assets/openbench-light.png">
 </picture>
 
-[![Paper](https://img.shields.io/badge/Paper-📄-blue)](http://argmaxinc.com/openbench-paper)
+[![Paper](https://img.shields.io/badge/Paper-📄-blue)](https://www.arxiv.org/abs/2507.16136)
 [![Discord](https://img.shields.io/discord/1171912382512115722?style=flat&logo=discord&logoColor=969da4&label=Discord&labelColor=353a41&color=32d058&link=https%3A%2F%2Fdiscord.gg%2FG5F5GZGecC)](https://discord.gg/G5F5GZGecC)
 
 > [!NOTE]
