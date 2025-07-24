@@ -1,0 +1,7 @@
+NeMoSortformerPipeline:
+  config:
+    out_dir: ./nemo_sortformer_logs
+    num_speakers: null
+    min_speakers: null
+    max_speakers: 4
+    use_float16: false

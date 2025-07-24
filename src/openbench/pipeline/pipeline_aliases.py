@@ -10,6 +10,7 @@ from .diarization import (
     PicovoicePipeline,
     PyannoteApiPipeline,
     PyAnnotePipeline,
+    NeMoSortformerPipeline,
     SpeakerKitPipeline,
 )
 from .orchestration import (
@@ -59,6 +60,21 @@ def register_pipeline_aliases() -> None:
             "use_float16": True,
         },
         description="Pyannote open-source speaker diarization pipeline.",
+    )
+
+    PipelineRegistry.register_alias(
+        "nemo-sortformer",
+        NeMoSortformerPipeline,
+        default_config={
+            "out_dir": "./nemo_sortformer_logs",
+            "num_speakers": None,
+            "min_speakers": None,
+            "max_speakers": 4,
+            "use_oracle_clustering": False,
+            "use_oracle_segmentation": False,
+            "use_float16": False,
+        },
+        description="NeMo Sortformer speaker diarization pipeline.",
     )
 
     PipelineRegistry.register_alias(
