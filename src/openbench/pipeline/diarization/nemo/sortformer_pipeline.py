@@ -65,6 +65,7 @@ class NeMoSortformerPipeline(Pipeline):
         pipeline = SortformerEncLabelModel.from_pretrained(
             "nvidia/diar_sortformer_4spk-v1"
         )
+        pipeline.to(self.config.device)
 
         def call_pipeline(
             inputs: NeMoSortformerPipelineInput,

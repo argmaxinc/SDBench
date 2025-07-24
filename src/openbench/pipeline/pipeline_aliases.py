@@ -72,7 +72,7 @@ def register_pipeline_aliases() -> None:
             "max_speakers": 4,
             "use_oracle_clustering": False,
             "use_oracle_segmentation": False,
-            "use_float16": True,
+            "use_float16": False,
         },
         description="NeMo Sortformer speaker diarization pipeline.",
     )
